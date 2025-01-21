@@ -46,7 +46,7 @@ Ensure the project has the following configurations set in Xcode:
 6. Under "Associated Domains", add `applinks:cdn-testing.plaid.com` as an entry
    > **Note:** If "Associated Domains" isn't present, you'll need to add it as a capability by clicking "+ Capability" (located near the "Signing & Capabilities" tab)
 
-![Xcode configuration](./xcode-config.png)
+<img width="1396" alt="Image" src="https://github.com/user-attachments/assets/9d4fb154-9b64-438e-8855-b2748f7c99bf" />
 
 #### Configure Redirect URI
 
@@ -138,4 +138,4 @@ Try these steps:
    - Restart emulator
    - Rebuild: `npx react-native run-android`
 
-![Android Studio wipe data](./android-studio-wipe-data.png)
+<img width="600" alt="Image" src="https://github.com/user-attachments/assets/923c5f84-26b1-4fb5-b9fb-5d8dd5b95b87" />
