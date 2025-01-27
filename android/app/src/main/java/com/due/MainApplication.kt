@@ -1,4 +1,4 @@
-package com.tinyquickstartreactnative
+package com.due
 
 import android.app.Application
 import com.facebook.react.PackageList
