@@ -27,13 +27,13 @@ const SuccessScreen = ({ navigation, route }: any) => {
     .catch((err) => {
       console.log(err);
     });
-  });
+  }, [address]);
 
   useEffect(() => {
     if (data == null) {
       getBalance();
     }
-  }, [data])
+  }, [data, getBalance])
 
   return (
     <View style={{ flex: 1 }}>
