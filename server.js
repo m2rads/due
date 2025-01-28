@@ -54,7 +54,7 @@ app.post('/api/create_link_token', async (req, res, next) => {
       user: {client_user_id: req.sessionID},
       client_name: 'Due',
       language: 'en',
-      products: ['auth'],
+      products: ['auth', 'transactions'],
       country_codes: ['US'],
       android_package_name: process.env.PLAID_ANDROID_PACKAGE_NAME,
     };
@@ -82,6 +82,37 @@ app.post('/api/balance', async (req, res, next) => {
   res.json({
     Balance: balanceResponse.data,
   });
+});
+
+// Fetches recurring transactions using the Plaid client
+app.post('/api/recurring_transactions', async (req, res, next) => {
+  try {
+    const access_token = req.session.access_token;
+    
+    // First, get accounts to get valid account IDs
+    const accountsResponse = await client.accountsGet({
+      access_token
+    });
+    
+    const account_ids = accountsResponse.data.accounts.map(account => account.account_id);
+    
+    const recurringResponse = await client.transactionsRecurringGet({
+      access_token,
+      account_ids
+    });
+    
+    console.log('Recurring Transactions Response:', JSON.stringify(recurringResponse.data, null, 2));
+    
+    res.json({
+      recurring_transactions: recurringResponse.data
+    });
+  } catch (error) {
+    console.error('Error fetching recurring transactions:', error);
+    if (error.response && error.response.data) {
+      console.error('Error details:', JSON.stringify(error.response.data, null, 2));
+    }
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.listen(port, () => {
