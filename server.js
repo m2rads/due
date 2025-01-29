@@ -44,7 +44,7 @@ app.post('/api/create_link_token', async (req, res, next) => {
       user: {client_user_id: req.sessionID},
       client_name: 'Plaid Tiny Quickstart - React Native',
       language: 'en',
-      products: ['auth'],
+      products: ['auth', 'transactions'],
       country_codes: ['US'],
       redirect_uri: process.env.PLAID_SANDBOX_REDIRECT_URI,
     };
@@ -89,6 +89,11 @@ app.post('/api/recurring_transactions', async (req, res, next) => {
   try {
     const access_token = req.session.access_token;
     
+    if (!access_token) {
+      console.error('No access token found in session');
+      return res.status(400).json({ error: 'No access token available. Please reconnect your bank account.' });
+    }
+
     // First, get accounts to get valid account IDs
     const accountsResponse = await client.accountsGet({
       access_token
@@ -96,6 +101,11 @@ app.post('/api/recurring_transactions', async (req, res, next) => {
     
     const account_ids = accountsResponse.data.accounts.map(account => account.account_id);
     
+    if (!account_ids || account_ids.length === 0) {
+      console.error('No account IDs found');
+      return res.status(400).json({ error: 'No accounts found for this access token.' });
+    }
+
     const recurringResponse = await client.transactionsRecurringGet({
       access_token,
       account_ids
@@ -111,7 +121,17 @@ app.post('/api/recurring_transactions', async (req, res, next) => {
     if (error.response && error.response.data) {
       console.error('Error details:', JSON.stringify(error.response.data, null, 2));
     }
-    res.status(500).json({ error: error.message });
+    
+    // Send more specific error messages based on the error type
+    if (error.response && error.response.status === 400) {
+      return res.status(400).json({ 
+        error: 'Invalid request to Plaid API. Please check your connection and try again.' 
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'Failed to fetch recurring transactions. ' + (error.message || 'Please try again later.') 
+    });
   }
 });
 
