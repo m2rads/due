@@ -1,9 +1,6 @@
-import { link } from 'fs';
 import React, { useState, useEffect, useCallback } from 'react';
-import { Platform, View, Text, StyleSheet, Button } from 'react-native';
+import { Platform, View, Text, Button } from 'react-native';
 import { create, open, dismissLink, LinkSuccess, LinkExit, LinkIOSPresentationStyle, LinkLogLevel } from 'react-native-plaid-link-sdk';
-
-var styles = require('./style');
 
 const HomeScreen = ({ navigation }: any) => {
   const [linkToken, setLinkToken] = useState(null);
@@ -73,12 +70,32 @@ const HomeScreen = ({ navigation }: any) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={styles.heading}>
-        <Text style={styles.titleText}>Tiny Quickstart – React Native</Text>
+      <View style={{
+        alignItems: 'center',
+        paddingHorizontal: 32,
+        justifyContent: 'flex-start',
+        backgroundColor: '#FFFFFF',
+        paddingBottom: 32,
+      }}>
+        <Text style={{
+          fontSize: 28,
+          fontWeight: 'bold',
+          textAlign: 'center',
+          marginTop: 36,
+          marginHorizontal: 10,
+        }}>
+          Due
+        </Text>
       </View>
-      <View style={styles.bottom}>
+      <View style={{
+        flex: 1,
+        justifyContent: 'flex-end',
+        backgroundColor: '#FFFFFF',
+        paddingHorizontal: 32,
+        paddingBottom: 32,
+      }}>
         <Button
-          title="Open Link"
+          title="Connect Bank Account"
           onPress={handleOpenLink}
         />
       </View>

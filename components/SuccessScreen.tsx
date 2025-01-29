@@ -7,9 +7,7 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
-  StyleSheet,
 } from 'react-native';
-var styles = require('./style');
 
 interface Amount {
   amount: number;
@@ -40,30 +38,66 @@ const TransactionCard = ({ transaction, type }: { transaction: TransactionStream
   });
 
   return (
-    <View style={localStyles.card}>
-      <View style={localStyles.headerRow}>
-        <Text style={localStyles.title}>
+    <View style={{
+      backgroundColor: 'white',
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 12,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 3,
+    }}>
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+      }}>
+        <Text style={{
+          fontSize: 16,
+          fontWeight: '600',
+          color: '#2d3436',
+          flex: 1,
+        }}>
           {transaction.merchant_name || transaction.description}
         </Text>
-        <Text style={[
-          localStyles.amount,
-          { color: type === 'inflow' ? '#2ecc71' : '#e74c3c' }
-        ]}>
+        <Text style={{
+          fontSize: 16,
+          fontWeight: '600',
+          marginLeft: 8,
+          color: type === 'inflow' ? '#2ecc71' : '#e74c3c',
+        }}>
           {type === 'inflow' ? '+' : '-'}{formattedAmount}
         </Text>
       </View>
       
-      <View style={localStyles.detailsContainer}>
-        <Text style={localStyles.category}>
+      <View style={{ gap: 4 }}>
+        <Text style={{
+          fontSize: 14,
+          color: '#636e72',
+          marginBottom: 4,
+        }}>
           {transaction.category.join(' › ')}
         </Text>
-        <Text style={localStyles.frequency}>
+        <Text style={{
+          fontSize: 14,
+          color: '#636e72',
+          fontWeight: '500',
+        }}>
           {transaction.frequency.charAt(0) + transaction.frequency.slice(1).toLowerCase()} • {transaction.status}
         </Text>
-        <Text style={localStyles.dates}>
+        <Text style={{
+          fontSize: 13,
+          color: '#b2bec3',
+        }}>
           Last transaction: {new Date(transaction.last_date).toLocaleDateString()}
         </Text>
-        <Text style={localStyles.dates}>
+        <Text style={{
+          fontSize: 13,
+          color: '#b2bec3',
+        }}>
           Next predicted: {new Date(transaction.predicted_next_date).toLocaleDateString()}
         </Text>
       </View>
@@ -112,34 +146,70 @@ const SuccessScreen = ({ navigation, route }: any) => {
 
   if (loading) {
     return (
-      <View style={[styles.body, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f5f6fa',
+      }}>
         <ActivityIndicator size="large" color="#000000" />
-        <Text style={[styles.baseText, { marginTop: 10 }]}>Loading transactions...</Text>
+        <Text style={{
+          marginTop: 10,
+          fontSize: 16,
+          color: '#2d3436',
+        }}>Loading transactions...</Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={[styles.body, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={[styles.baseText, { color: 'red' }]}>{error}</Text>
+      <View style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f5f6fa',
+      }}>
+        <Text style={{
+          fontSize: 16,
+          color: '#e74c3c',
+          textAlign: 'center',
+          paddingHorizontal: 20,
+        }}>{error}</Text>
       </View>
     );
   }
 
   return (
     <View style={{ flex: 1, backgroundColor: '#f5f6fa' }}>
-      <View style={styles.heading}>
-        <Text style={styles.titleText}>Recurring Transactions</Text>
+      <View style={{
+        backgroundColor: 'white',
+        padding: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e1e1e1',
+      }}>
+        <Text style={{
+          fontSize: 20,
+          fontWeight: 'bold',
+          textAlign: 'center',
+          color: '#2d3436',
+        }}>
+          Recurring Transactions
+        </Text>
       </View>
-      <ScrollView 
-        contentContainerStyle={localStyles.scrollContent}
-      >
+      <ScrollView style={{ flex: 1 }}>
         {transactions && (
-          <View style={localStyles.container}>
+          <View style={{ padding: 16 }}>
             {transactions.inflow_streams.length > 0 && (
-              <View style={localStyles.section}>
-                <Text style={localStyles.sectionTitle}>Income</Text>
+              <View style={{ marginBottom: 24 }}>
+                <Text style={{
+                  fontSize: 18,
+                  fontWeight: '600',
+                  marginBottom: 12,
+                  color: '#2d3436',
+                }}>
+                  Income
+                </Text>
                 {transactions.inflow_streams.map((transaction, index) => (
                   <TransactionCard 
                     key={index} 
@@ -151,8 +221,15 @@ const SuccessScreen = ({ navigation, route }: any) => {
             )}
             
             {transactions.outflow_streams.length > 0 && (
-              <View style={localStyles.section}>
-                <Text style={localStyles.sectionTitle}>Expenses</Text>
+              <View style={{ marginBottom: 24 }}>
+                <Text style={{
+                  fontSize: 18,
+                  fontWeight: '600',
+                  marginBottom: 12,
+                  color: '#2d3436',
+                }}>
+                  Expenses
+                </Text>
                 {transactions.outflow_streams.map((transaction, index) => (
                   <TransactionCard 
                     key={index} 
@@ -168,72 +245,6 @@ const SuccessScreen = ({ navigation, route }: any) => {
     </View>
   );
 };
-
-const localStyles = StyleSheet.create({
-  scrollContent: {
-    flexGrow: 1,
-  },
-  container: {
-    padding: 16,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 12,
-    color: '#2d3436',
-  },
-  card: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2d3436',
-    flex: 1,
-  },
-  amount: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  detailsContainer: {
-    gap: 4,
-  },
-  category: {
-    fontSize: 14,
-    color: '#636e72',
-    marginBottom: 4,
-  },
-  frequency: {
-    fontSize: 14,
-    color: '#636e72',
-    fontWeight: '500',
-  },
-  dates: {
-    fontSize: 13,
-    color: '#b2bec3',
-  },
-});
 
 function notifyMessage(msg: string) {
   if (Platform.OS === 'android') {
