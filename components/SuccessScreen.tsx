@@ -7,6 +7,7 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 
 interface Amount {
@@ -146,60 +147,37 @@ const SuccessScreen = ({ navigation, route }: any) => {
 
   if (loading) {
     return (
-      <View style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f5f6fa',
-      }}>
+      <View className="flex-1 justify-center items-center bg-gray-50">
         <ActivityIndicator size="large" color="#000000" />
-        <Text style={{
-          marginTop: 10,
-          fontSize: 16,
-          color: '#2d3436',
-        }}>Loading transactions...</Text>
+        <Text className="mt-2 text-base text-gray-800">Loading transactions...</Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f5f6fa',
-      }}>
-        <Text style={{
-          fontSize: 16,
-          color: '#e74c3c',
-          textAlign: 'center',
-          paddingHorizontal: 20,
-        }}>{error}</Text>
+      <View className="flex-1 justify-center items-center bg-gray-50">
+        <Text className="text-base text-red-600 text-center px-5">{error}</Text>
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f5f6fa' }}>
-      <View style={{
-        backgroundColor: 'white',
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e1e1e1',
-      }}>
-        <Text style={{
-          fontSize: 20,
-          fontWeight: 'bold',
-          textAlign: 'center',
-          color: '#2d3436',
-        }}>
+    <View className="flex-1 bg-gray-50">
+      <View className="bg-white p-4 border-b border-gray-100">
+        <Text className="text-xl font-bold text-center text-gray-800">
           Recurring Transactions
         </Text>
+        <TouchableOpacity 
+          onPress={() => navigation.navigate('Calendar')}
+          className="mt-4 bg-black py-3 px-4 rounded-lg"
+        >
+          <Text className="text-white text-center font-medium">View Payment Calendar</Text>
+        </TouchableOpacity>
       </View>
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView className="flex-1">
         {transactions && (
-          <View style={{ padding: 16 }}>
+          <View className="p-4">
             {transactions.inflow_streams.length > 0 && (
               <View style={{ marginBottom: 24 }}>
                 <Text style={{
