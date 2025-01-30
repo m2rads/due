@@ -5,6 +5,7 @@ import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SuccessScreen from './components/SuccessScreen';
 import HomeScreen from './components/HomeScreen';
+import CalendarView from './components/CalendarView';
 import "./global.css"
 
 const Stack = createNativeStackNavigator();
@@ -45,6 +46,17 @@ const App = (): React.ReactElement => {
                 backgroundColor: '#000000',
               },
               headerTintColor: '#fff',
+            }}
+          />
+          <Stack.Screen
+            name="Calendar"
+            component={CalendarView}
+            options={{
+              headerStyle: {
+                backgroundColor: '#000000',
+              },
+              headerTintColor: '#fff',
+              title: 'Payment Calendar'
             }}
           />
         </Stack.Navigator>
