@@ -169,7 +169,7 @@ const SuccessScreen = ({ navigation, route }: any) => {
           Recurring Transactions
         </Text>
         <TouchableOpacity 
-          onPress={() => navigation.navigate('Calendar')}
+          onPress={() => navigation.navigate('Calendar', { transactions })}
           className="mt-4 bg-black py-3 px-4 rounded-lg"
         >
           <Text className="text-white text-center font-medium">View Payment Calendar</Text>

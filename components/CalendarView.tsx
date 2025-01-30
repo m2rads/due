@@ -4,7 +4,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Image,
   Dimensions,
 } from 'react-native';
 import {
@@ -15,35 +14,57 @@ import {
   endOfMonth,
   eachDayOfInterval,
   isSameDay,
+  parseISO,
 } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 
-const sampleLogos = [
-  "https://companieslogo.com/img/orig/AMZN-e9f942e4.png",
-  "https://companieslogo.com/img/orig/GOOGL-0ed88f7c.png",
-  "https://companieslogo.com/img/orig/NFLX-a4700c1d.png",
-  "https://companieslogo.com/img/orig/AAPL-bf1a4314.png",
-  "https://companieslogo.com/img/orig/IBM-57ec8a40.png",
-  "https://companieslogo.com/img/orig/MSFT-a203b22c.png",
-];
+interface Amount {
+  amount: number;
+}
 
-const getRandomLogos = () => {
-  const count = Math.floor(Math.random() * 4);
-  const shuffled = [...sampleLogos].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
-};
+interface TransactionStream {
+  description: string;
+  merchant_name: string;
+  average_amount: Amount;
+  frequency: string;
+  category: string[];
+  last_date: string;
+  predicted_next_date: string;
+  is_active: boolean;
+  status: string;
+}
+
+interface RecurringTransactions {
+  inflow_streams: TransactionStream[];
+  outflow_streams: TransactionStream[];
+}
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const DAY_WIDTH = (SCREEN_WIDTH - 32) / 7; // 32 is total horizontal padding
 
-const CalendarView = () => {
+const CalendarView = ({ route }: any) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const today = new Date();
+  const transactions = route.params?.transactions as RecurringTransactions;
 
   const days = eachDayOfInterval({
     start: startOfMonth(currentDate),
     end: endOfMonth(currentDate),
   });
+
+  const getTransactionsForDay = (day: Date) => {
+    if (!transactions) return [];
+    
+    const allTransactions = [
+      ...transactions.inflow_streams.map(t => ({ ...t, type: 'inflow' as const })),
+      ...transactions.outflow_streams.map(t => ({ ...t, type: 'outflow' as const }))
+    ];
+
+    return allTransactions.filter(transaction => {
+      const predictedDate = parseISO(transaction.predicted_next_date);
+      return isSameDay(predictedDate, day);
+    });
+  };
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
@@ -81,9 +102,9 @@ const CalendarView = () => {
           ))}
           
           {days.map((day) => {
-            const dayLogos = getRandomLogos();
-            const visibleLogos = dayLogos.slice(0, 2);
-            const hasMoreLogos = dayLogos.length > 2;
+            const dayTransactions = getTransactionsForDay(day);
+            const visibleTransactions = dayTransactions.slice(0, 2);
+            const hasMoreTransactions = dayTransactions.length > 2;
 
             return (
               <View
@@ -97,24 +118,23 @@ const CalendarView = () => {
                   <Text className="text-xs text-gray-600">
                     {format(day, 'd')}
                   </Text>
-                  {hasMoreLogos && (
+                  {hasMoreTransactions && (
                     <View className="w-1.5 h-1.5 rounded-full bg-red-500" />
                   )}
                 </View>
                 
                 <View className="flex-1 pt-6 px-0.5 justify-center items-center">
                   <View className="flex-row flex-wrap justify-center items-center gap-0.5">
-                    {visibleLogos.map((logo, idx) => (
-                      <View 
-                        key={idx} 
-                        className="w-5 h-5 bg-white rounded-full p-0.5 shadow-sm overflow-hidden"
+                    {visibleTransactions.map((transaction, idx) => (
+                      <Text 
+                        key={idx}
+                        className={`text-xs ${
+                          transaction.type === 'inflow' ? 'text-green-600' : 'text-red-600'
+                        }`}
+                        numberOfLines={1}
                       >
-                        <Image
-                          source={{ uri: logo }}
-                          className="w-full h-full"
-                          resizeMode="contain"
-                        />
-                      </View>
+                        {transaction.merchant_name || transaction.description}
+                      </Text>
                     ))}
                   </View>
                 </View>
