@@ -42,8 +42,9 @@ interface RecurringTransactions {
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const CALENDAR_PADDING = 32; // Total horizontal padding
-const DAY_WIDTH = Math.floor((SCREEN_WIDTH - CALENDAR_PADDING) / 7); // Ensure whole number
+const CONTAINER_WIDTH = SCREEN_WIDTH - 32; // Container width with padding
+const CALENDAR_PADDING = 16; // Reduced padding for even spacing
+const DAY_WIDTH = Math.floor((CONTAINER_WIDTH - (CALENDAR_PADDING * 2)) / 7); // Account for padding on both sides
 const TOTAL_CALENDAR_WIDTH = DAY_WIDTH * 7;
 
 const CalendarView = ({ route, navigation }: any) => {
@@ -87,7 +88,10 @@ const CalendarView = ({ route, navigation }: any) => {
 
   return (
     <View className="flex-1 bg-gray-100 p-4">
-      <View className="bg-white rounded-xl shadow-sm">
+      <View 
+        style={{ width: CONTAINER_WIDTH }}
+        className="bg-white rounded-xl shadow-sm"
+      >
         <View className="flex-row items-center justify-between p-4 border-b border-gray-100">
           <TouchableOpacity onPress={prevMonth} className="p-2">
             <ChevronLeft size={24} color="#666" />
@@ -100,30 +104,27 @@ const CalendarView = ({ route, navigation }: any) => {
           </TouchableOpacity>
         </View>
 
-        <View className="flex-row p-4 pb-2">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-            <View key={day} style={{ width: DAY_WIDTH }}>
-              <Text className="text-center text-sm font-medium text-gray-600">
-                {day}
-              </Text>
-            </View>
-          ))}
-        </View>
+        <View className="px-4">
+          <View className="flex-row py-4">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+              <View key={day} style={{ width: DAY_WIDTH }}>
+                <Text className="text-center text-sm font-medium text-gray-600">
+                  {day}
+                </Text>
+              </View>
+            ))}
+          </View>
 
-        <View 
-          className="p-4 pt-2"
-          style={{ 
-            width: TOTAL_CALENDAR_WIDTH + 16, // Add small padding
-            alignSelf: 'center'
-          }}
-        >
-          <View className="flex-row flex-wrap">
+          <View 
+            style={{ width: TOTAL_CALENDAR_WIDTH }}
+            className="flex-row flex-wrap self-center"
+          >
             {/* Empty cells for previous month */}
             {Array.from({ length: firstDayOffset }).map((_, index) => (
               <View 
                 key={`empty-${index}`} 
                 style={{ width: DAY_WIDTH, height: DAY_WIDTH }}
-                className="p-1"
+                className="p-0.5"
               >
                 <View className="flex-1 border border-gray-100 rounded-lg bg-gray-50" />
               </View>
@@ -139,7 +140,7 @@ const CalendarView = ({ route, navigation }: any) => {
                 <View 
                   key={day.toString()} 
                   style={{ width: DAY_WIDTH, height: DAY_WIDTH }}
-                  className="p-1"
+                  className="p-0.5"
                 >
                   <TouchableOpacity
                     className={`flex-1 relative border border-gray-100 rounded-lg ${
@@ -148,8 +149,8 @@ const CalendarView = ({ route, navigation }: any) => {
                     onPress={() => handleDayPress(day, dayTransactions)}
                     disabled={dayTransactions.length === 0}
                   >
-                    <View className="absolute top-1 left-1 right-1 flex-row justify-between items-center">
-                      <Text className="text-xs text-gray-600">
+                    <View className="absolute top-1.5 left-1.5 right-1.5 flex-row justify-between items-center">
+                      <Text className="text-sm text-gray-600">
                         {format(day, 'd')}
                       </Text>
                       {hasMoreTransactions && (
@@ -157,7 +158,7 @@ const CalendarView = ({ route, navigation }: any) => {
                       )}
                     </View>
                     
-                    <View className="flex-1 pt-6 px-0.5 justify-center items-center">
+                    <View className="flex-1 pt-7 px-1 justify-center items-center">
                       <View className="flex-row flex-wrap justify-center items-center gap-0.5">
                         {visibleTransactions.map((transaction, idx) => (
                           <Text 
@@ -182,12 +183,13 @@ const CalendarView = ({ route, navigation }: any) => {
               <View 
                 key={`empty-end-${index}`} 
                 style={{ width: DAY_WIDTH, height: DAY_WIDTH }}
-                className="p-1"
+                className="p-0.5"
               >
                 <View className="flex-1 border border-gray-100 rounded-lg bg-gray-50" />
               </View>
             ))}
           </View>
+          <View className="h-4" />
         </View>
       </View>
     </View>
