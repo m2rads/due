@@ -42,7 +42,7 @@ interface RecurringTransactions {
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const DAY_WIDTH = (SCREEN_WIDTH - 32) / 7; // 32 is total horizontal padding
 
-const CalendarView = ({ route }: any) => {
+const CalendarView = ({ route, navigation }: any) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const today = new Date();
   const transactions = route.params?.transactions as RecurringTransactions;
@@ -68,6 +68,15 @@ const CalendarView = ({ route }: any) => {
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
+
+  const handleDayPress = (day: Date, transactions: any[]) => {
+    if (transactions.length > 0) {
+      navigation.navigate('DayDetail', {
+        date: day.toISOString(),
+        transactions: transactions
+      });
+    }
+  };
 
   return (
     <View className="flex-1 bg-gray-100 p-4">
@@ -107,12 +116,14 @@ const CalendarView = ({ route }: any) => {
             const hasMoreTransactions = dayTransactions.length > 2;
 
             return (
-              <View
+              <TouchableOpacity
                 key={day.toString()}
                 style={{ width: DAY_WIDTH }}
                 className={`aspect-square relative border border-gray-100 rounded-lg ${
                   isSameDay(day, today) ? 'bg-blue-50 border-blue-500' : ''
-                }`}
+                } ${dayTransactions.length > 0 ? 'active:bg-gray-100' : ''}`}
+                onPress={() => handleDayPress(day, dayTransactions)}
+                disabled={dayTransactions.length === 0}
               >
                 <View className="absolute top-1 left-1 right-1 flex-row justify-between items-center">
                   <Text className="text-xs text-gray-600">
@@ -138,7 +149,7 @@ const CalendarView = ({ route }: any) => {
                     ))}
                   </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             );
           })}
         </View>
