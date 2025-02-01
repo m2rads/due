@@ -15,6 +15,8 @@ import {
   eachDayOfInterval,
   isSameDay,
   parseISO,
+  lastDayOfMonth,
+  getDay,
 } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 
@@ -40,7 +42,9 @@ interface RecurringTransactions {
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const DAY_WIDTH = (SCREEN_WIDTH - 32) / 7; // 32 is total horizontal padding
+const CALENDAR_PADDING = 32; // Total horizontal padding
+const DAY_WIDTH = Math.floor((SCREEN_WIDTH - CALENDAR_PADDING) / 7); // Ensure whole number
+const TOTAL_CALENDAR_WIDTH = DAY_WIDTH * 7;
 
 const CalendarView = ({ route, navigation }: any) => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -78,6 +82,9 @@ const CalendarView = ({ route, navigation }: any) => {
     }
   };
 
+  // Calculate first day offset
+  const firstDayOffset = getDay(startOfMonth(currentDate));
+
   return (
     <View className="flex-1 bg-gray-100 p-4">
       <View className="bg-white rounded-xl shadow-sm">
@@ -95,71 +102,96 @@ const CalendarView = ({ route, navigation }: any) => {
 
         <View className="flex-row p-4 pb-2">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-            <Text key={day} className="flex-1 text-center text-sm font-medium text-gray-600">
-              {day}
-            </Text>
+            <View key={day} style={{ width: DAY_WIDTH }}>
+              <Text className="text-center text-sm font-medium text-gray-600">
+                {day}
+              </Text>
+            </View>
           ))}
         </View>
 
-        <View className="flex-row flex-wrap p-4 pt-2">
-          {Array.from({ length: getFirstDayOffset(currentDate) }).map((_, index) => (
-            <View 
-              key={`empty-${index}`} 
-              style={{ width: DAY_WIDTH }}
-              className="aspect-square p-1 border border-gray-100 rounded-lg"
-            />
-          ))}
-          
-          {days.map((day) => {
-            const dayTransactions = getTransactionsForDay(day);
-            const visibleTransactions = dayTransactions.slice(0, 2);
-            const hasMoreTransactions = dayTransactions.length > 2;
-
-            return (
-              <TouchableOpacity
-                key={day.toString()}
-                style={{ width: DAY_WIDTH }}
-                className={`aspect-square relative border border-gray-100 rounded-lg ${
-                  isSameDay(day, today) ? 'bg-blue-50 border-blue-500' : ''
-                } ${dayTransactions.length > 0 ? 'active:bg-gray-100' : ''}`}
-                onPress={() => handleDayPress(day, dayTransactions)}
-                disabled={dayTransactions.length === 0}
+        <View 
+          className="p-4 pt-2"
+          style={{ 
+            width: TOTAL_CALENDAR_WIDTH + 16, // Add small padding
+            alignSelf: 'center'
+          }}
+        >
+          <View className="flex-row flex-wrap">
+            {/* Empty cells for previous month */}
+            {Array.from({ length: firstDayOffset }).map((_, index) => (
+              <View 
+                key={`empty-${index}`} 
+                style={{ width: DAY_WIDTH, height: DAY_WIDTH }}
+                className="p-1"
               >
-                <View className="absolute top-1 left-1 right-1 flex-row justify-between items-center">
-                  <Text className="text-xs text-gray-600">
-                    {format(day, 'd')}
-                  </Text>
-                  {hasMoreTransactions && (
-                    <View className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                  )}
-                </View>
-                
-                <View className="flex-1 pt-6 px-0.5 justify-center items-center">
-                  <View className="flex-row flex-wrap justify-center items-center gap-0.5">
-                    {visibleTransactions.map((transaction, idx) => (
-                      <Text 
-                        key={idx}
-                        className={`text-xs ${
-                          transaction.type === 'inflow' ? 'text-green-600' : 'text-red-600'
-                        }`}
-                        numberOfLines={1}
-                      >
-                        {transaction.merchant_name || transaction.description}
+                <View className="flex-1 border border-gray-100 rounded-lg bg-gray-50" />
+              </View>
+            ))}
+            
+            {/* Current month days */}
+            {days.map((day) => {
+              const dayTransactions = getTransactionsForDay(day);
+              const visibleTransactions = dayTransactions.slice(0, 2);
+              const hasMoreTransactions = dayTransactions.length > 2;
+
+              return (
+                <View 
+                  key={day.toString()} 
+                  style={{ width: DAY_WIDTH, height: DAY_WIDTH }}
+                  className="p-1"
+                >
+                  <TouchableOpacity
+                    className={`flex-1 relative border border-gray-100 rounded-lg ${
+                      isSameDay(day, today) ? 'bg-blue-50 border-blue-500' : ''
+                    } ${dayTransactions.length > 0 ? 'active:bg-gray-100' : ''}`}
+                    onPress={() => handleDayPress(day, dayTransactions)}
+                    disabled={dayTransactions.length === 0}
+                  >
+                    <View className="absolute top-1 left-1 right-1 flex-row justify-between items-center">
+                      <Text className="text-xs text-gray-600">
+                        {format(day, 'd')}
                       </Text>
-                    ))}
-                  </View>
+                      {hasMoreTransactions && (
+                        <View className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                      )}
+                    </View>
+                    
+                    <View className="flex-1 pt-6 px-0.5 justify-center items-center">
+                      <View className="flex-row flex-wrap justify-center items-center gap-0.5">
+                        {visibleTransactions.map((transaction, idx) => (
+                          <Text 
+                            key={idx}
+                            className={`text-xs ${
+                              transaction.type === 'inflow' ? 'text-green-600' : 'text-red-600'
+                            }`}
+                            numberOfLines={1}
+                          >
+                            {transaction.merchant_name || transaction.description}
+                          </Text>
+                        ))}
+                      </View>
+                    </View>
+                  </TouchableOpacity>
                 </View>
-              </TouchableOpacity>
-            );
-          })}
+              );
+            })}
+
+            {/* Empty cells for next month to complete the grid */}
+            {Array.from({ length: (7 - ((days.length + firstDayOffset) % 7)) % 7 }).map((_, index) => (
+              <View 
+                key={`empty-end-${index}`} 
+                style={{ width: DAY_WIDTH, height: DAY_WIDTH }}
+                className="p-1"
+              >
+                <View className="flex-1 border border-gray-100 rounded-lg bg-gray-50" />
+              </View>
+            ))}
+          </View>
         </View>
       </View>
     </View>
   );
 };
-
-function getFirstDayOffset(date: Date): number {
-  return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-}
 
 export default CalendarView;
