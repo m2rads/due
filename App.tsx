@@ -3,7 +3,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import SuccessScreen from './components/SuccessScreen';
 import HomeScreen from './components/HomeScreen';
 import CalendarView from './components/CalendarView';
 import "./global.css"
@@ -31,16 +30,6 @@ const App = (): React.ReactElement => {
           <Stack.Screen
             name="Home"
             component={HomeScreen}
-            options={{
-              headerStyle: {
-                backgroundColor: '#000000',
-              },
-              headerTintColor: '#fff',
-            }}
-          />
-          <Stack.Screen
-            name="Success"
-            component={SuccessScreen}
             options={{
               headerStyle: {
                 backgroundColor: '#000000',
