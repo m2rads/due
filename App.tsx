@@ -5,6 +5,7 @@ import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import HomeScreen from './components/HomeScreen';
 import CalendarView from './components/CalendarView';
+import DayDetailView from './components/DayDetailView';
 import "./global.css"
 
 const Stack = createNativeStackNavigator();
@@ -46,6 +47,17 @@ const App = (): React.ReactElement => {
               },
               headerTintColor: '#fff',
               title: 'Payment Calendar'
+            }}
+          />
+          <Stack.Screen
+            name="DayDetail"
+            component={DayDetailView}
+            options={{
+              headerStyle: {
+                backgroundColor: '#000000',
+              },
+              headerTintColor: '#fff',
+              title: 'Daily Transactions'
             }}
           />
         </Stack.Navigator>
