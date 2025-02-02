@@ -6,6 +6,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import HomeScreen from './components/HomeScreen';
 import CalendarView from './components/CalendarView';
 import DayDetailView from './components/DayDetailView';
+import AuthScreen from './components/AuthScreen';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import "./global.css"
 
 const Stack = createNativeStackNavigator();
@@ -22,12 +24,25 @@ const PlaidTheme = {
   },
 };
 
-const App = (): React.ReactElement => {
+const NavigationContent = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return null; // Or a loading screen
+  }
+
   return (
-    <SafeAreaProvider>
-      <NavigationContainer theme={PlaidTheme}>
-        <StatusBar barStyle="light-content" backgroundColor="#000000" />
-        <Stack.Navigator>
+    <Stack.Navigator>
+      {!user ? (
+        <Stack.Screen
+          name="Auth"
+          component={AuthScreen}
+          options={{
+            headerShown: false
+          }}
+        />
+      ) : (
+        <>
           <Stack.Screen
             name="Home"
             component={HomeScreen}
@@ -60,9 +75,22 @@ const App = (): React.ReactElement => {
               title: 'Daily Transactions'
             }}
           />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </SafeAreaProvider>
+        </>
+      )}
+    </Stack.Navigator>
+  );
+};
+
+const App = (): React.ReactElement => {
+  return (
+    <AuthProvider>
+      <SafeAreaProvider>
+        <NavigationContainer theme={PlaidTheme}>
+          <StatusBar barStyle="light-content" backgroundColor="#000000" />
+          <NavigationContent />
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </AuthProvider>
   );
 };
 

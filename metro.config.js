@@ -7,6 +7,15 @@ const { withNativeWind } = require("nativewind/metro");
  *
  * @type {import('metro-config').MetroConfig}
  */
-const config = {};
+const config = {
+  resolver: {
+    sourceExts: ['jsx', 'js', 'ts', 'tsx', 'json'],
+    extraNodeModules: {
+      '@env': require.resolve('react-native-dotenv'),
+      'path': require.resolve('path-browserify'),
+      'fs': require.resolve('react-native-fs')
+    }
+  }
+};
 
 module.exports = withNativeWind(mergeConfig(getDefaultConfig(__dirname), config), { input: "./global.css" });
