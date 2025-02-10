@@ -1,74 +1,23 @@
 {
-  "name": "due",
-  "version": "0.0.1",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "backend": "yarn workspace @due-mono/backend dev",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" --ignore-path .gitignore"
+  },
+  "devDependencies": {
+    "prettier": "^3.1.1",
+    "turbo": "^2.4.0"
+  },
+  "packageManager": "yarn@1.22.19",
   "engines": {
     "node": ">=18"
   },
-  "scripts": {
-    "android": "react-native run-android",
-    "ios": "react-native run-ios",
-    "ios:15": "npx react-native run-ios --simulator=\"iPhone 15\"",
-    "start": "react-native start",
-    "test": "jest",
-    "lint": "eslint .",
-    "server": "node server.js"
-  },
-  "dependencies": {
-    "@react-navigation/native": "6.1.17",
-    "@react-navigation/native-stack": "6.9.26",
-    "@react-navigation/stack": "6.3.29",
-    "body-parser": "^1.20.0",
-    "clean": "^4.0.2",
-    "date-fns": "^4.1.0",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.1",
-    "express-session": "^1.17.3",
-    "lucide-react-native": "^0.474.0",
-    "nativewind": "^4.1.23",
-    "plaid": "^30.0.0",
-    "react": "18.2.0",
-    "react-native": "0.74.6",
-    "react-native-plaid-link-sdk": "11.13.3",
-    "react-native-reanimated": "^3.16.7",
-    "react-native-safe-area-context": "^4.10.0-rc.1",
-    "react-native-screens": "3.30.1",
-    "react-native-svg": "^15.11.1",
-    "react-scripts": "^5.0.1",
-    "tailwindcss": "^3.4.17",
-    "typescript": "5.0.4"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.20.0",
-    "@babel/preset-env": "^7.20.0",
-    "@babel/runtime": "^7.20.0",
-    "@react-native/babel-preset": "0.74.88",
-    "@react-native/eslint-config": "0.74.88",
-    "@react-native/metro-config": "0.74.88",
-    "@react-native/typescript-config": "0.74.88",
-    "@types/react": "^18.2.6",
-    "@types/react-test-renderer": "^18.0.0",
-    "babel-jest": "^29.6.3",
-    "eslint": "^8.19.0",
-    "jest": "^29.6.3",
-    "prettier": "2.8.8",
-    "react-test-renderer": "18.2.0",
-    "typescript": "5.0.4"
-  },
-  "overrides": {
-    "@typescript-eslint/typescript-estree": "^5.57.1",
-    "fork-ts-checker-webpack-plugin": "^6.5.3",
-    "typescript": "5.0.4",
-    "svgo": {
-      "nth-check": ">=2.0.2"
-    },
-    "react-scripts": {
-      "postcss": ">=8.4.31"
-    }
-  },
-  "jest": {
-    "preset": "react-native"
-  },
-  "proxy": "http://localhost:8080",
-  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
+  "name": "due-mono"
 }
