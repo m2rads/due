@@ -1,18 +1,17 @@
 {
-  "name": "due",
+  "name": "@due/mobile",
   "version": "0.0.1",
   "private": true,
   "engines": {
     "node": ">=18"
   },
   "scripts": {
+    "dev": "react-native start",
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "ios:15": "npx react-native run-ios --simulator=\"iPhone 15\"",
-    "start": "react-native start",
     "test": "jest",
-    "lint": "eslint .",
-    "server": "node server.js"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@babel/runtime": "^7.20.0",

@@ -14,19 +14,12 @@
       "persistent": true,
       "cache": false
     },
-    "mobile#android": {
-      "persistent": true,
-      "cache": false
-    },
-    "mobile#ios": {
+    "mobile#dev": {
       "persistent": true,
       "cache": false
     },
     "lint": {
       "outputs": []
-    },
-    "clean": {
-      "cache": false
     }
   }
 }
