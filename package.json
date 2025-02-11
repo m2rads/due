@@ -9,7 +9,14 @@
     "build": "turbo run build",
     "clean": "turbo run clean && rm -rf node_modules",
     "backend": "yarn workspace @due-mono/backend dev",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" --ignore-path .gitignore"
+    "mobile": "yarn workspace due dev",
+    "mobile:ios": "yarn workspace due ios",
+    "mobile:android": "yarn workspace due android",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" --ignore-path .gitignore",
+    "lint": "turbo run lint",
+    "mobile:clean": "cd apps/mobile && rm -rf android ios node_modules",
+    "mobile:pods": "cd apps/mobile/ios && bundle install && pod install",
+    "mobile:start": "yarn workspace due start"
   },
   "devDependencies": {
     "prettier": "^3.1.1",
