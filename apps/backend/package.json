@@ -10,7 +10,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "lint": "eslint src/**/*.ts",
-    "test": "jest"
+    "test": "jest --coverage"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.48.1",
