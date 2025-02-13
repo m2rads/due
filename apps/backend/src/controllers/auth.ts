@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { supabase } from '../config/supabase';
-import { SignUpBody, SignInBody } from '../types/auth';
+import { SignUpBody, SignInBody, AuthRequest } from '../types/auth';
+import { createProfile, getProfileById } from '../db/queries/profiles';
 
 export async function signUp(req: Request, res: Response) {
   try {
@@ -20,9 +21,18 @@ export async function signUp(req: Request, res: Response) {
       return res.status(400).json({ error: error?.message || 'Signup failed' });
     }
 
+    // Create profile
+    const profile = await createProfile({
+      id: data.user.id,
+      full_name,
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+
     res.json({
       user: data.user,
-      session: data.session
+      session: data.session,
+      profile
     });
   } catch (error) {
     console.error('Signup error:', error);
@@ -43,9 +53,13 @@ export async function signIn(req: Request, res: Response) {
       return res.status(400).json({ error: error?.message || 'Sign in failed' });
     }
 
+    // Get profile
+    const profile = await getProfileById(data.user.id);
+
     res.json({
       user: data.user,
-      session: data.session
+      session: data.session,
+      profile
     });
   } catch (error) {
     console.error('Sign in error:', error);
@@ -85,6 +99,25 @@ export async function deleteUser(req: Request, res: Response) {
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
     console.error('Delete user error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+export async function getMe(req: Request, res: Response) {
+  try {
+    const authReq = req as AuthRequest;
+    if (!authReq.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const profile = await getProfileById(authReq.user.id);
+
+    res.json({
+      user: authReq.user,
+      profile,
+    });
+  } catch (error) {
+    console.error('Get user error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 } 
