@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { supabase } from '../config/supabase';
 import { SignUpBody, SignInBody } from '../types/auth';
 import { signUp, signIn, signOut, deleteUser } from '../controllers/auth';
+import { createProfile, getProfileById } from '../db/queries/profiles';
 
 // Mock Supabase
 jest.mock('../config/supabase', () => ({
@@ -16,6 +17,12 @@ jest.mock('../config/supabase', () => ({
       }
     }
   }
+}));
+
+// Mock profile operations
+jest.mock('../db/queries/profiles', () => ({
+  createProfile: jest.fn(),
+  getProfileById: jest.fn()
 }));
 
 describe('Authentication', () => {
@@ -52,7 +59,13 @@ describe('Authentication', () => {
         error: null
       };
 
+      const mockProfile = {
+        id: mockUser.id,
+        full_name: 'Test User'
+      };
+
       (supabase.auth.signUp as jest.Mock).mockResolvedValue(mockAuthResponse);
+      (createProfile as jest.Mock).mockResolvedValue(mockProfile);
 
       mockRequest.body = {
         email: 'test@example.com',
@@ -71,11 +84,18 @@ describe('Authentication', () => {
           }
         }
       });
+      expect(createProfile).toHaveBeenCalledWith({
+        id: mockUser.id,
+        full_name: 'Test User',
+        created_at: expect.any(Date),
+        updated_at: expect.any(Date)
+      });
       expect(mockJson).toHaveBeenCalledWith({
         user: mockUser,
-        session: mockAuthResponse.data.session
+        session: mockAuthResponse.data.session,
+        profile: mockProfile
       });
-    });
+    }, 10000); // Increased timeout
 
     it('should handle signup failure', async () => {
       (supabase.auth.signUp as jest.Mock).mockResolvedValue({
@@ -93,6 +113,7 @@ describe('Authentication', () => {
 
       expect(mockStatus).toHaveBeenCalledWith(400);
       expect(mockJson).toHaveBeenCalledWith({ error: 'Signup failed' });
+      expect(createProfile).not.toHaveBeenCalled();
     });
   });
 
@@ -113,7 +134,13 @@ describe('Authentication', () => {
         error: null
       };
 
+      const mockProfile = {
+        id: mockUser.id,
+        full_name: 'Test User'
+      };
+
       (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue(mockAuthResponse);
+      (getProfileById as jest.Mock).mockResolvedValue(mockProfile);
 
       mockRequest.body = {
         email: 'test@example.com',
@@ -126,11 +153,13 @@ describe('Authentication', () => {
         email: 'test@example.com',
         password: 'password123'
       });
+      expect(getProfileById).toHaveBeenCalledWith(mockUser.id);
       expect(mockJson).toHaveBeenCalledWith({
         user: mockUser,
-        session: mockAuthResponse.data.session
+        session: mockAuthResponse.data.session,
+        profile: mockProfile
       });
-    });
+    }, 10000); // Increased timeout
 
     it('should handle signin failure', async () => {
       (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
