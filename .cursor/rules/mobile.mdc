@@ -3,8 +3,6 @@ description: This rule only applies to the React-native mobile app
 globs: mobile/*
 ---
 
-# Your rule content
-
 This is a monorepo turborepo project. Our focuse is on mobile app that is about a subscription and recurring payment management app written in react native plain metro integrated with plaid sdk here at app/mobile . I also have a backend in app/backend that is in charge of handling link plaid stuff and supabase auth and db operations. Below is the layout of the application and thier usage: 
 
 apps/mobile/
