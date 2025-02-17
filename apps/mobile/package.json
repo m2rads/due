@@ -8,8 +8,7 @@
   "scripts": {
     "dev": "react-native start",
     "android": "react-native run-android",
-    "ios": "react-native run-ios",
-    "ios:15": "npx react-native run-ios --simulator=\"iPhone 15\"",
+    "ios:16": "npx react-native run-ios --simulator='iPhone 16'",
     "test": "jest",
     "lint": "eslint ."
   },
