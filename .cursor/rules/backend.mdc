@@ -1,0 +1,16 @@
+---
+description: This rule only applies to the Node.js  backend and the supabse with drizzle db operations
+globs: apps/backend/*
+---
+This rule is only for the backend. The backend is written in node.js with Typescript for type checking.
+The backend uses PLaid SDK to grab the recurring transactions from the users bank account. For the authentication we directly use Supabase auth capabilities where as for other db operations we use Drizzle kit to create migrations and push to supabase [package.json](mdc:apps/backend/package.json).  
+
+ Its main role is to act as a proxy to connect the mobile app to the auth, supabase db and plaid transactions API.
+
+ For the authentication related code you can look at: 
+ [auth.ts](mdc:apps/backend/src/types/auth.ts), [auth.ts](mdc:apps/backend/src/routes/auth.ts), [auth.ts](mdc:apps/backend/src/routes/auth.ts), [auth.ts](mdc:apps/backend/src/middleware/auth.ts), [auth.ts](mdc:apps/backend/src/controllers/auth.ts), [profiles.ts](mdc:apps/backend/src/db/schema/profiles.ts), [profiles.ts](mdc:apps/backend/src/db/queries/profiles.ts)
+
+ For Plaid sdk look at: [index.ts](mdc:apps/backend/src/index.ts)
+
+ For Drizzle configs: 
+ [drizzle.config.ts](mdc:apps/backend/drizzle.config.ts), [index.ts](mdc:apps/backend/src/db/index.ts)
