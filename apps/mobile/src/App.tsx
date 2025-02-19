@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import HomeScreen from './screens/main/HomeScreen';
+import AddAccountScreen from './screens/main/AddAccountScreen';
 import CalendarView from './screens/main/CalendarView';
 import DayDetailView from './screens/main/DayDetailView';
 import WelcomeScreen from './screens/auth/Welcome';
@@ -74,8 +74,8 @@ const MainNavigator = () => (
     }}
   >
     <MainStack.Screen
-      name="Home"
-      component={HomeScreen}
+      name="AddAccount"
+      component={AddAccountScreen}
     />
     <MainStack.Screen
       name="Calendar"

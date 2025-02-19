@@ -54,7 +54,7 @@ export type AuthStackParamList = {
 };
 
 export type MainStackParamList = {
-  Home: undefined;
+  AddAccount: undefined;
   Calendar: { transactions: any }; // TODO: Add proper type from your transactions
   DayDetail: { date: string; transactions: any[] }; // TODO: Add proper type from your transactions
 };

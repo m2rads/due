@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Platform, View, Text, Button, ActivityIndicator } from 'react-native';
 import { create, open, dismissLink, LinkSuccess, LinkExit, LinkIOSPresentationStyle, LinkLogLevel } from 'react-native-plaid-link-sdk';
 
-const HomeScreen = ({ navigation }: any) => {
+const AddAccountScreen = ({ navigation }: any) => {
   const [linkToken, setLinkToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const address = Platform.OS === 'ios' ? 'localhost' : '10.0.2.2';
@@ -153,4 +153,4 @@ const HomeScreen = ({ navigation }: any) => {
   );
 };
 
-export default HomeScreen;
+export default AddAccountScreen;
