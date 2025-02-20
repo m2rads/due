@@ -1,12 +1,15 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
+import { Calendar, PlusCircle, Settings } from 'lucide-react-native';
 import AddAccountScreen from './screens/main/AddAccountScreen';
 import CalendarView from './screens/main/CalendarView';
 import DayDetailView from './screens/main/DayDetailView';
+import SettingsScreen from './screens/main/SettingsScreen';
 import WelcomeScreen from './screens/auth/Welcome';
 import SignInScreen from './screens/auth/SignInScreen';
 import SignUpScreen from './screens/auth/SignUpScreen';
@@ -19,6 +22,7 @@ import LoadingScreen from './components/LoadingScreen';
 const Stack = createNativeStackNavigator();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const MainStack = createNativeStackNavigator<MainStackParamList>();
+const Tab = createBottomTabNavigator();
 
 const PlaidTheme = {
   dark: false,
@@ -64,7 +68,7 @@ const AuthNavigator = () => (
   </AuthStack.Navigator>
 );
 
-const MainNavigator = () => (
+const CalendarStack = () => (
   <MainStack.Navigator
     screenOptions={{
       headerStyle: {
@@ -73,10 +77,6 @@ const MainNavigator = () => (
       headerTintColor: '#fff',
     }}
   >
-    <MainStack.Screen
-      name="AddAccount"
-      component={AddAccountScreen}
-    />
     <MainStack.Screen
       name="Calendar"
       component={CalendarView}
@@ -92,6 +92,55 @@ const MainNavigator = () => (
       }}
     />
   </MainStack.Navigator>
+);
+
+const MainNavigator = () => (
+  <Tab.Navigator
+    screenOptions={{
+      tabBarStyle: {
+        backgroundColor: '#000000',
+        borderTopColor: '#333333',
+      },
+      tabBarActiveTintColor: '#FFFFFF',
+      tabBarInactiveTintColor: '#666666',
+      headerStyle: {
+        backgroundColor: '#000000',
+      },
+      headerTintColor: '#fff',
+    }}
+  >
+    <Tab.Screen
+      name="CalendarTab"
+      component={CalendarStack}
+      options={{
+        headerShown: false,
+        title: 'Calendar',
+        tabBarIcon: ({ color, size }) => (
+          <Calendar size={size} color={color} />
+        ),
+      }}
+    />
+    <Tab.Screen
+      name="AddAccountTab"
+      component={AddAccountScreen}
+      options={{
+        title: 'Add Account',
+        tabBarIcon: ({ color, size }) => (
+          <PlusCircle size={size} color={color} />
+        ),
+      }}
+    />
+    <Tab.Screen
+      name="SettingsTab"
+      component={SettingsScreen}
+      options={{
+        title: 'Settings',
+        tabBarIcon: ({ color, size }) => (
+          <Settings size={size} color={color} />
+        ),
+      }}
+    />
+  </Tab.Navigator>
 );
 
 const Navigation = () => {
