@@ -15,6 +15,7 @@
   "dependencies": {
     "@babel/runtime": "^7.20.0",
     "@react-native-async-storage/async-storage": "^2.1.1",
+    "@react-navigation/bottom-tabs": "6.5.16",
     "@react-navigation/native": "6.1.17",
     "@react-navigation/native-stack": "6.9.26",
     "@react-navigation/stack": "6.3.29",
@@ -30,6 +31,7 @@
     "plaid": "^30.0.0",
     "react": "18.2.0",
     "react-native": "0.74.6",
+    "react-native-gesture-handler": "2.15.0",
     "react-native-keychain": "^9.2.3",
     "react-native-plaid-link-sdk": "11.13.3",
     "react-native-reanimated": "^3.16.7",
