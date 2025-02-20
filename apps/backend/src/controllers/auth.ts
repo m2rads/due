@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { supabase } from '../config/supabase';
 import { SignUpBody, SignInBody, AuthRequest } from '../types/auth';
-import { createProfile, getProfileById } from '../db/queries/profiles';
+import { createProfile, getProfileById, deleteProfile } from '../db/queries/profiles';
 
 export async function signUp(req: Request, res: Response) {
   try {
@@ -84,21 +84,38 @@ export async function signOut(req: Request, res: Response) {
 
 export async function deleteUser(req: Request, res: Response) {
   try {
+    // Get the current user
     const { data: { user }, error: getUserError } = await supabase.auth.getUser();
 
     if (getUserError || !user) {
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
+    // First delete the user's profile
+    try {
+      await deleteProfile(user.id);
+    } catch (error) {
+      console.error('Profile deletion error:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    // Then delete the user from Supabase auth
     const { error } = await supabase.auth.admin.deleteUser(user.id);
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      console.error('Auth deletion error:', error);
+      return res.status(400).json({ error: 'Failed to delete user' });
     }
 
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
-    console.error('Delete user error:', error);
+    // If it's a Supabase error (has error.message), treat as auth error
+    if (error && typeof error === 'object' && 'message' in error) {
+      console.error('Auth deletion error:', error);
+      return res.status(400).json({ error: 'Failed to delete user' });
+    }
+    // Otherwise it's an unexpected error
+    console.error('Unexpected error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 }
