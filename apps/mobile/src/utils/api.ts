@@ -170,10 +170,33 @@ export const authAPI = {
 
   async signOut(): Promise<void> {
     try {
+      // Try to sign out on the server
       await api.post('/auth/signout');
+    } catch (error) {
+      // Ignore "No refresh token" errors as this is expected in some cases (like after account deletion)
+      if (error instanceof Error && error.message !== 'No refresh token found') {
+        console.error('Sign out error:', error);
+      }
     } finally {
-      // Always clear credentials on sign out
+      // Always clear credentials regardless of server response
       await Keychain.resetGenericPassword({ service: 'auth' });
+    }
+  },
+
+  async clearAuthState(): Promise<void> {
+    await Keychain.resetGenericPassword({ service: 'auth' });
+  },
+
+  async deleteAccount(): Promise<void> {
+    try {
+      await api.delete('/auth/user');
+      // Clear credentials after successful deletion
+      await this.clearAuthState();
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.error || 'Failed to delete account');
+      }
+      throw error;
     }
   },
 

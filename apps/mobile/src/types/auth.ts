@@ -43,6 +43,7 @@ export interface AuthContextType extends AuthState {
   signIn: (credentials: SignInBody) => Promise<void>;
   signUp: (data: SignUpBody) => Promise<void>;
   signOut: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   clearError: () => void;
 }
 

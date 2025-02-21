@@ -3,20 +3,22 @@ import React from 'react';
 import { View, TouchableOpacity, Text, Alert } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { LogOut, Trash2 } from 'lucide-react-native';
-import api from '../../utils/api';
 
 const SettingsScreen = () => {
-  const { signOut } = useAuth();
+  const { signOut, deleteAccount } = useAuth();
 
   const handleDeleteAccount = async () => {
     try {
-      await api.delete('/api/auth/user');
-      // After successful deletion, sign out
-      signOut();
-    } catch (error) {
+      await deleteAccount();
+      Alert.alert(
+        'Account Deleted',
+        'Your account has been permanently deleted.',
+        [{ text: 'OK' }]
+      );
+    } catch (error: any) {
       Alert.alert(
         'Error',
-        'Failed to delete account. Please try again.',
+        error.message || 'Failed to delete account. Please try again.',
         [{ text: 'OK' }]
       );
     }
