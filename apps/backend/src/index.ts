@@ -3,7 +3,9 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
 import session from 'express-session';
+import cors from 'cors';
 import { Configuration, PlaidApi, PlaidEnvironments, Products, CountryCode } from 'plaid';
+import authRouter from './routes/auth';
 
 // Load environment variables
 dotenv.config();
@@ -32,6 +34,11 @@ const app = express();
 const router = express.Router();
 const port = process.env.PORT || 8080;
 
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
 // Session configuration
 app.use(
   (session({
@@ -42,11 +49,9 @@ app.use(
   }) as unknown) as express.RequestHandler
 );
 
+// Routes
+app.use('/auth', authRouter);
 app.use(router);
-
-// Middleware
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
 
 // Plaid configuration
 const config = new Configuration({

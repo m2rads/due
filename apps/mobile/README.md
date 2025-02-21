@@ -17,7 +17,7 @@ Follow the environment setup instructions found in the official React Native doc
 ### 2. Install dependencies
 
 1. Ensure you're using Node 20; you can run `nvm use` to make sure you are using a compatible version of Node for this project
-2. Run `npm install` in the **TinyQuickstartReactNative/** folder
+2. Run `npm install` in the **Due/** folder
 3. Navigate to the **ios/** folder and run `bundle install && pod install` to install all necessary iOS dependencies
 
 ### 3. Equip the app with API credentials
@@ -36,9 +36,9 @@ Follow the environment setup instructions found in the official React Native doc
 
 Ensure the project has the following configurations set in Xcode:
 
-1. Open **TinyQuickstartReactNative** in Xcode 
-2. In the navigator on the left, click on "TinyQuickstartReactNative"
-3. Click "TinyQuickstartReactNative" under "Targets"
+1. Open **Due** in Xcode 
+2. In the navigator on the left, click on "Due"
+3. Click "Due" under "Targets"
 4. Click "Signing & Capabilities"
 5. Under "Signing":
    - Set "Team" to "None"
@@ -61,18 +61,18 @@ Configure your Android package name in the Plaid Dashboard:
 
 1. In the ["API" section of the Plaid Dashboard](https://dashboard.plaid.com/team/api), add the following as an allowed Android package name:
    ```
-   com.tinyquickstartreactnative
+   com.due
    ```
 
 > **Note:** For more information on OAuth with Plaid, see the [OAuth Guide](https://plaid.com/docs/link/oauth/) in Plaid's documentation.
 
 ### 5. Start the backend server
 
-In a terminal window, run `node server.js` in the **TinyQuickstartReactNative/** folder. This will run a local server on port 8080.
+In a terminal window, run `node server.js` in the **due/** folder. This will run a local server on port 8080.
 
 ### 6. Run the app
 
-Open a new terminal window and run one of the following commands in the **TinyQuickstartReactNative/** folder:
+Open a new terminal window and run one of the following commands in the **due/** folder:
 
 ```bash
 # To run on iOS

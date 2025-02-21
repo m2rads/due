@@ -11,8 +11,11 @@
     "build": "turbo run build",
     "backend": "yarn workspace @due/backend dev",
     "mobile": "yarn workspace @due/mobile dev",
+    "ios": "yarn workspace @due/mobile ios:16",
+    "pod": "cd apps/mobile/ios && bundle install && pod install",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" --ignore-path .gitignore",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "test:backend": "yarn workspace @due/backend test"
   },
   "devDependencies": {
     "prettier": "^3.1.1",

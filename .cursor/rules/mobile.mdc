@@ -1,0 +1,47 @@
+---
+description: This rule only applies to the React-native mobile app
+globs: apps/mobile/*
+---
+
+This is a monorepo turborepo project. Our focuse is on mobile app that is about a subscription and recurring payment management app written in react native plain metro integrated with plaid sdk here at app/mobile . I also have a backend in app/backend that is in charge of handling link plaid stuff and supabase auth and db operations. Below is the layout of the application and thier usage: 
+
+apps/mobile/
+├── src/
+│ ├── context/
+│ │ └── [AuthContext.tsx](mdc:apps/mobile/src/context/AuthContext.tsx) // Manage auth state & token
+│ ├── screens/auth/
+│ │ ├── [Welcome.tsx](mdc:apps/mobile/src/screens/auth/Welcome.tsx)
+│ │ ├── [SignInScreen.tsx](mdc:apps/mobile/src/screens/auth/SignInScreen.tsx)
+│ │ ├── [SignUpScreen.tsx](mdc:apps/mobile/src/screens/auth/SignUpScreen.tsx)
+│ │ └── [ForgotPassword.tsx](mdc:apps/mobile/src/screens/auth/ForgotPassword.tsx)
+| |-- screens/main/ 
+| |   |-- [CalendarView.tsx](mdc:apps/mobile/src/screens/main/CalendarView.tsx)  // A Calendar view that lays out the payment on their dates
+| |   |-- [DayDetailView.tsx](mdc:apps/mobile/src/screens/main/DayDetailView.tsx) // A view that shows the details of the payments that are comming on that day
+| |   |-- [HomeScreen.tsx](mdc:apps/mobile/src/screens/main/HomeScreen.tsx) // The view that has a button and allows users to add their bank account
+| |    
+│ ├── types/
+│ │ └── [auth.ts](mdc:apps/mobile/src/types/auth.ts) // Auth-related types
+│ └── utils/
+│    └── [api.ts](mdc:apps/mobile/src/utils/api.ts) // API client for backend calls
+
+The goal of this app is to make it easier for the users to manage their subscriptions and recurring transactions from one platform. We will be leveraging plaid sdk to connect to users bank account. The core feature of this product is the calendar and day view which allows users to see their transactions in the month. Most of our time will be spent on perfecting this feature.
+
+We use nativewind in this app. Fine the configs in [tailwind.config.js](mdc:apps/mobile/tailwind.config.js)
+For other configs see [package.json](mdc:apps/mobile/package.json) 
+We use plaind metro react native because plaid sdk does not work with expo. 
+For other configs look at [babel.config.js](mdc:apps/mobile/babel.config.js), [metro.config.js](mdc:apps/mobile/metro.config.js)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

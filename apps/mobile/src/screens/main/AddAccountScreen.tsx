@@ -1,11 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Platform, View, Text, Button, ActivityIndicator } from 'react-native';
+import { Platform, View, Text, TouchableOpacity, ActivityIndicator, Animated } from 'react-native';
 import { create, open, dismissLink, LinkSuccess, LinkExit, LinkIOSPresentationStyle, LinkLogLevel } from 'react-native-plaid-link-sdk';
 
-const HomeScreen = ({ navigation }: any) => {
+const AddAccountScreen = ({ navigation }: any) => {
   const [linkToken, setLinkToken] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [fadeAnim] = useState(new Animated.Value(0));
   const address = Platform.OS === 'ios' ? 'localhost' : '10.0.2.2';
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   const createLinkToken = useCallback(async () => {
     console.log('Creating link token for platform:', Platform.OS);
@@ -87,9 +96,18 @@ const HomeScreen = ({ navigation }: any) => {
           // Fetch recurring transactions
           const transactions = await fetchRecurringTransactions();
           console.log('Navigating to Calendar with transactions');
-          navigation.navigate('Calendar', { transactions });
+          // Navigate with transactions, no loading state needed
+          navigation.navigate('Calendar', { 
+            transactions,
+            isLoading: false 
+          });
         } catch (error) {
           console.error('Error in onSuccess:', error);
+          // Navigate to Calendar with no transactions but not in loading state
+          navigation.navigate('Calendar', { 
+            transactions: null,
+            isLoading: false 
+          });
         } finally {
           setLoading(false);
         }
@@ -111,46 +129,33 @@ const HomeScreen = ({ navigation }: any) => {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF' }}>
+      <View className="flex-1 justify-center items-center bg-white">
         <ActivityIndicator size="large" color="#000000" />
-        <Text style={{ marginTop: 12 }}>Loading your transactions...</Text>
+        <Text className="mt-3 text-gray-600">Loading your transactions...</Text>
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <View style={{
-        alignItems: 'center',
-        paddingHorizontal: 32,
-        justifyContent: 'flex-start',
-        backgroundColor: '#FFFFFF',
-        paddingBottom: 32,
-      }}>
-        <Text style={{
-          fontSize: 28,
-          fontWeight: 'bold',
-          textAlign: 'center',
-          marginTop: 36,
-          marginHorizontal: 10,
-        }}>
+    <Animated.View className="flex-1" style={{ opacity: fadeAnim }}>
+      <View className="items-center px-8 justify-start bg-white pb-8">
+        <Text className="text-3xl font-bold text-center mt-9 mb-4">
           Due
         </Text>
+        <Text className="text-base text-gray-600 text-center mb-6">
+          Connect your bank account to manage your recurring payments
+        </Text>
       </View>
-      <View style={{
-        flex: 1,
-        justifyContent: 'flex-end',
-        backgroundColor: '#FFFFFF',
-        paddingHorizontal: 32,
-        paddingBottom: 32,
-      }}>
-        <Button
-          title="Connect Bank Account"
+      <View className="flex-1 justify-end bg-white px-8 pb-8">
+        <TouchableOpacity
           onPress={handleOpenLink}
-        />
+          className="bg-black py-4 rounded-xl flex-row items-center justify-center"
+        >
+          <Text className="text-white font-semibold text-lg">Connect Bank Account</Text>
+        </TouchableOpacity>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
-export default HomeScreen;
+export default AddAccountScreen;

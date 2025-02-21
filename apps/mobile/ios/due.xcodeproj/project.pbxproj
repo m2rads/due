@@ -7,14 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		00E356F31AD99517003FC87E /* TinyQuickstartReactNativeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* TinyQuickstartReactNativeTests.m */; };
+		00E356F31AD99517003FC87E /* due.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* due.m */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		2C81CAB8DED0A0B00FDF5547 /* libPods-due-DueTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 31573C2E1F9A40984ACFD09A /* libPods-due-DueTests.a */; };
-		3BB1800917055630E4C4BE77 /* libPods-due.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 62EF0B7E540049D6C839FC3B /* libPods-due.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		BE6A825EC5F5324513B20BA6 /* libPods-due.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DA16C2B90210307AB9766970 /* libPods-due.a */; };
 		E9E2EFCAE8116E42F30A17D2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E83D94686AE5F8CC7B97EA9D /* PrivacyInfo.xcprivacy */; };
+		FA5F087EB92167FD46E449FA /* libPods-due-DueTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FDCA5A82A20CF99358C590A /* libPods-due-DueTests.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -30,23 +30,23 @@
 /* Begin PBXFileReference section */
 		00E356EE1AD99517003FC87E /* DueTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DueTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		00E356F21AD99517003FC87E /* TinyQuickstartReactNativeTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TinyQuickstartReactNativeTests.m; sourceTree = "<group>"; };
-		02B4925D543581CBAE9690D9 /* Pods-due.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-due.release.xcconfig"; path = "Target Support Files/Pods-due/Pods-due.release.xcconfig"; sourceTree = "<group>"; };
+		00E356F21AD99517003FC87E /* due.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = due.m; sourceTree = "<group>"; };
+		0FF5B32ADC279880FF408A5F /* Pods-due.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-due.debug.xcconfig"; path = "Target Support Files/Pods-due/Pods-due.debug.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* due.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = due.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = due/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = due/AppDelegate.mm; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = due/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = due/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = main.m; path = due/main.m; sourceTree = "<group>"; };
-		224A50E691E5B7F10EAB5170 /* Pods-due.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-due.debug.xcconfig"; path = "Target Support Files/Pods-due/Pods-due.debug.xcconfig"; sourceTree = "<group>"; };
-		2525506E4770D73C4A800EEF /* Pods-due-DueTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-due-DueTests.debug.xcconfig"; path = "Target Support Files/Pods-due-DueTests/Pods-due-DueTests.debug.xcconfig"; sourceTree = "<group>"; };
-		31573C2E1F9A40984ACFD09A /* libPods-due-DueTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-due-DueTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		62EF0B7E540049D6C839FC3B /* libPods-due.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-due.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		74F852E2D5399900AD2F114F /* Pods-due-DueTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-due-DueTests.release.xcconfig"; path = "Target Support Files/Pods-due-DueTests/Pods-due-DueTests.release.xcconfig"; sourceTree = "<group>"; };
+		1AE7E8FA8EA48332495A086E /* Pods-due-DueTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-due-DueTests.release.xcconfig"; path = "Target Support Files/Pods-due-DueTests/Pods-due-DueTests.release.xcconfig"; sourceTree = "<group>"; };
+		1FDCA5A82A20CF99358C590A /* libPods-due-DueTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-due-DueTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = due/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D2C5878328EE16A7002C73AF /* due.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = due.entitlements; path = due/due.entitlements; sourceTree = "<group>"; };
+		DA16C2B90210307AB9766970 /* libPods-due.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-due.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E83D94686AE5F8CC7B97EA9D /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = due/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		ECC7078EE642A55391129B00 /* Pods-due-DueTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-due-DueTests.debug.xcconfig"; path = "Target Support Files/Pods-due-DueTests/Pods-due-DueTests.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F331A0EE67DDDAD7863821F1 /* Pods-due.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-due.release.xcconfig"; path = "Target Support Files/Pods-due/Pods-due.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,7 +54,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2C81CAB8DED0A0B00FDF5547 /* libPods-due-DueTests.a in Frameworks */,
+				FA5F087EB92167FD46E449FA /* libPods-due-DueTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -62,20 +62,20 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3BB1800917055630E4C4BE77 /* libPods-due.a in Frameworks */,
+				BE6A825EC5F5324513B20BA6 /* libPods-due.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		00E356EF1AD99517003FC87E /* TinyQuickstartReactNativeTests */ = {
+		00E356EF1AD99517003FC87E /* due */ = {
 			isa = PBXGroup;
 			children = (
-				00E356F21AD99517003FC87E /* TinyQuickstartReactNativeTests.m */,
+				00E356F21AD99517003FC87E /* due.m */,
 				00E356F01AD99517003FC87E /* Supporting Files */,
 			);
-			path = TinyQuickstartReactNativeTests;
+			path = due;
 			sourceTree = "<group>";
 		};
 		00E356F01AD99517003FC87E /* Supporting Files */ = {
@@ -105,8 +105,8 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				62EF0B7E540049D6C839FC3B /* libPods-due.a */,
-				31573C2E1F9A40984ACFD09A /* libPods-due-DueTests.a */,
+				DA16C2B90210307AB9766970 /* libPods-due.a */,
+				1FDCA5A82A20CF99358C590A /* libPods-due-DueTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -123,7 +123,7 @@
 			children = (
 				13B07FAE1A68108700A75B9A /* due */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
-				00E356EF1AD99517003FC87E /* TinyQuickstartReactNativeTests */,
+				00E356EF1AD99517003FC87E /* due */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
@@ -145,10 +145,10 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				224A50E691E5B7F10EAB5170 /* Pods-due.debug.xcconfig */,
-				02B4925D543581CBAE9690D9 /* Pods-due.release.xcconfig */,
-				2525506E4770D73C4A800EEF /* Pods-due-DueTests.debug.xcconfig */,
-				74F852E2D5399900AD2F114F /* Pods-due-DueTests.release.xcconfig */,
+				0FF5B32ADC279880FF408A5F /* Pods-due.debug.xcconfig */,
+				F331A0EE67DDDAD7863821F1 /* Pods-due.release.xcconfig */,
+				ECC7078EE642A55391129B00 /* Pods-due-DueTests.debug.xcconfig */,
+				1AE7E8FA8EA48332495A086E /* Pods-due-DueTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -160,12 +160,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "DueTests" */;
 			buildPhases = (
-				979E9755B4C6F0CA40D4093F /* [CP] Check Pods Manifest.lock */,
+				8A8F53E6DFB88EE219C38DCE /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				AAF972E317A8AF9E3CC7A339 /* [CP] Embed Pods Frameworks */,
-				CEB7C2851FC26032E5FEB04A /* [CP] Copy Pods Resources */,
+				230B3796E3342BDE59808820 /* [CP] Embed Pods Frameworks */,
+				FF5553B2FD945985A18180EA /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -181,14 +181,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "due" */;
 			buildPhases = (
-				FC88EE0D8946FB1537B53B01 /* [CP] Check Pods Manifest.lock */,
+				6407F2596A44A3D790635695 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				C412118F2FC6EE5375790584 /* [CP] Embed Pods Frameworks */,
-				B15A1435C2A99AFA6A91FACE /* [CP] Copy Pods Resources */,
+				92242E3C88F13968400BF6ED /* [CP] Embed Pods Frameworks */,
+				1104254D20B155FE7C12729C /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -272,46 +272,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		979E9755B4C6F0CA40D4093F /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-due-DueTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		AAF972E317A8AF9E3CC7A339 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-due-DueTests/Pods-due-DueTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-due-DueTests/Pods-due-DueTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-due-DueTests/Pods-due-DueTests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		B15A1435C2A99AFA6A91FACE /* [CP] Copy Pods Resources */ = {
+		1104254D20B155FE7C12729C /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -328,41 +289,24 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-due/Pods-due-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C412118F2FC6EE5375790584 /* [CP] Embed Pods Frameworks */ = {
+		230B3796E3342BDE59808820 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-due/Pods-due-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-due-DueTests/Pods-due-DueTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-due/Pods-due-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-due-DueTests/Pods-due-DueTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-due/Pods-due-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-due-DueTests/Pods-due-DueTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		CEB7C2851FC26032E5FEB04A /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-due-DueTests/Pods-due-DueTests-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-due-DueTests/Pods-due-DueTests-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-due-DueTests/Pods-due-DueTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		FC88EE0D8946FB1537B53B01 /* [CP] Check Pods Manifest.lock */ = {
+		6407F2596A44A3D790635695 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -384,6 +328,45 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		8A8F53E6DFB88EE219C38DCE /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-due-DueTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		92242E3C88F13968400BF6ED /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-due/Pods-due-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-due/Pods-due-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-due/Pods-due-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -403,6 +386,23 @@
 			shellScript = "export RCT_METRO_PORT=\"${RCT_METRO_PORT:=8081}\"\necho \"export RCT_METRO_PORT=${RCT_METRO_PORT}\" > \"${SRCROOT}/../node_modules/react-native/scripts/.packager.env\"\nif [ -z \"${RCT_NO_LAUNCH_PACKAGER+xxx}\" ] ; then\n  if nc -w 5 -z localhost ${RCT_METRO_PORT} ; then\n    if ! curl -s \"http://localhost:${RCT_METRO_PORT}/status\" | grep -q \"packager-status:running\" ; then\n      echo \"Port ${RCT_METRO_PORT} already in use, packager is either not running or not running correctly\"\n      exit 2\n    fi\n  else\n    open \"$SRCROOT/../node_modules/react-native/scripts/launchPackager.command\" || echo \"Can't start packager automatically\"\n  fi\nfi\n";
 			showEnvVarsInLog = 0;
 		};
+		FF5553B2FD945985A18180EA /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-due-DueTests/Pods-due-DueTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-due-DueTests/Pods-due-DueTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-due-DueTests/Pods-due-DueTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -410,7 +410,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				00E356F31AD99517003FC87E /* TinyQuickstartReactNativeTests.m in Sources */,
+				00E356F31AD99517003FC87E /* due.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -436,14 +436,14 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2525506E4770D73C4A800EEF /* Pods-due-DueTests.debug.xcconfig */;
+			baseConfigurationReference = ECC7078EE642A55391129B00 /* Pods-due-DueTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = TinyQuickstartReactNativeTests/Info.plist;
+				INFOPLIST_FILE = due/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -463,11 +463,11 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 74F852E2D5399900AD2F114F /* Pods-due-DueTests.release.xcconfig */;
+			baseConfigurationReference = 1AE7E8FA8EA48332495A086E /* Pods-due-DueTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
-				INFOPLIST_FILE = TinyQuickstartReactNativeTests/Info.plist;
+				INFOPLIST_FILE = due/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -487,7 +487,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 224A50E691E5B7F10EAB5170 /* Pods-due.debug.xcconfig */;
+			baseConfigurationReference = 0FF5B32ADC279880FF408A5F /* Pods-due.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -506,7 +506,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.plaid.linkauth.ios.reactnative.ellarad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.due.metro;
 				PRODUCT_NAME = due;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -516,7 +516,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 02B4925D543581CBAE9690D9 /* Pods-due.release.xcconfig */;
+			baseConfigurationReference = F331A0EE67DDDAD7863821F1 /* Pods-due.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -534,7 +534,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.plaid.linkauth.ios.reactnative.ellarad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.due.metro;
 				PRODUCT_NAME = due;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
