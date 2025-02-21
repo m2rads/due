@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import * as Keychain from 'react-native-keychain';
-import { AuthContextType, AuthState, SignInBody, SignUpBody } from '../types/auth';
+import {  SignInBody, SignUpBody } from '@due/types';
+import { AuthState, AuthContextType } from '../types/auth';
 import { authAPI } from '../utils/api';
 import Toast from 'react-native-toast-message';
 
