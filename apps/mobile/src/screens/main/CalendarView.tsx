@@ -5,6 +5,7 @@ import {
   Text,
   TouchableOpacity,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import {
   format,
@@ -18,7 +19,7 @@ import {
   lastDayOfMonth,
   getDay,
 } from 'date-fns';
-import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Calendar, PlusCircle } from 'lucide-react-native';
 
 interface Amount {
   amount: number;
@@ -51,6 +52,7 @@ const CalendarView = ({ route, navigation }: any) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const today = new Date();
   const transactions = route.params?.transactions as RecurringTransactions;
+  const isLoading = route.params?.isLoading ?? false;
 
   const days = eachDayOfInterval({
     start: startOfMonth(currentDate),
@@ -85,6 +87,48 @@ const CalendarView = ({ route, navigation }: any) => {
 
   // Calculate first day offset
   const firstDayOffset = getDay(startOfMonth(currentDate));
+
+  const handleConnectBank = () => {
+    navigation.navigate('AddAccountTab');
+  };
+
+  const EmptyStateView = () => (
+    <View className="flex-1 justify-center items-center p-8">
+      <Calendar size={64} color="#9CA3AF" />
+      <Text className="text-xl font-semibold text-gray-800 mt-6 text-center">
+        No Transactions Yet
+      </Text>
+      <Text className="text-base text-gray-600 mt-2 mb-8 text-center">
+        Connect your bank account to see your recurring payments in the calendar
+      </Text>
+      <TouchableOpacity
+        onPress={handleConnectBank}
+        className="flex-row items-center bg-black px-6 py-4 rounded-xl"
+      >
+        <PlusCircle size={24} color="#fff" className="mr-2" />
+        <Text className="text-white font-semibold text-base">
+          Connect Bank Account
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const LoadingView = () => (
+    <View className="flex-1 justify-center items-center">
+      <ActivityIndicator size="large" color="#000000" />
+      <Text className="text-base text-gray-600 mt-4">
+        Loading your transactions...
+      </Text>
+    </View>
+  );
+
+  if (isLoading) {
+    return <LoadingView />;
+  }
+
+  if (!transactions || (transactions.inflow_streams.length === 0 && transactions.outflow_streams.length === 0)) {
+    return <EmptyStateView />;
+  }
 
   return (
     <View className="flex-1 bg-gray-100 p-4">
