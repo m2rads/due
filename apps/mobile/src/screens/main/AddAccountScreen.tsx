@@ -87,9 +87,18 @@ const AddAccountScreen = ({ navigation }: any) => {
           // Fetch recurring transactions
           const transactions = await fetchRecurringTransactions();
           console.log('Navigating to Calendar with transactions');
-          navigation.navigate('Calendar', { transactions });
+          // Navigate with transactions, no loading state needed
+          navigation.navigate('Calendar', { 
+            transactions,
+            isLoading: false 
+          });
         } catch (error) {
           console.error('Error in onSuccess:', error);
+          // Navigate to Calendar with no transactions but not in loading state
+          navigation.navigate('Calendar', { 
+            transactions: null,
+            isLoading: false 
+          });
         } finally {
           setLoading(false);
         }
