@@ -1,19 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { Configuration, PlaidApi, PlaidEnvironments, Products, CountryCode } from 'plaid';
+import { Products, CountryCode } from 'plaid';
 import { CreateLinkTokenRequest, ExchangeTokenRequest } from '../types/plaid';
-
-const config = new Configuration({
-  basePath: PlaidEnvironments[process.env.PLAID_ENV || 'sandbox'],
-  baseOptions: {
-    headers: {
-      'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID,
-      'PLAID-SECRET': process.env.PLAID_SECRET,
-      'Plaid-Version': '2020-09-14',
-    },
-  },
-});
-
-const client = new PlaidApi(config);
+import { plaidClient } from '../config/plaid';
 
 export async function createLinkToken(req: Request, res: Response, next: NextFunction) {
   try {
@@ -37,7 +25,7 @@ export async function createLinkToken(req: Request, res: Response, next: NextFun
           android_package_name: process.env.PLAID_ANDROID_PACKAGE_NAME,
         };
 
-    const tokenResponse = await client.linkTokenCreate(payload);
+    const tokenResponse = await plaidClient.linkTokenCreate(payload);
     res.json(tokenResponse.data);
   } catch (error) {
     next(error);
@@ -48,7 +36,7 @@ export async function exchangePublicToken(req: Request, res: Response, next: Nex
   try {
     const { public_token } = req.body as ExchangeTokenRequest;
     
-    const exchangeResponse = await client.itemPublicTokenExchange({
+    const exchangeResponse = await plaidClient.itemPublicTokenExchange({
       public_token,
     });
 
@@ -66,7 +54,7 @@ export async function getBalance(req: Request, res: Response, next: NextFunction
       return res.status(400).json({ error: 'No access token found' });
     }
 
-    const balanceResponse = await client.accountsBalanceGet({ access_token });
+    const balanceResponse = await plaidClient.accountsBalanceGet({ access_token });
     res.json({
       Balance: balanceResponse.data,
     });
@@ -85,7 +73,7 @@ export async function getRecurringTransactions(req: Request, res: Response, next
       });
     }
 
-    const accountsResponse = await client.accountsGet({
+    const accountsResponse = await plaidClient.accountsGet({
       access_token
     });
     
@@ -97,7 +85,7 @@ export async function getRecurringTransactions(req: Request, res: Response, next
       });
     }
 
-    const recurringResponse = await client.transactionsRecurringGet({
+    const recurringResponse = await plaidClient.transactionsRecurringGet({
       access_token,
       account_ids
     });
