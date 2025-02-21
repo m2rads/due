@@ -31,11 +31,11 @@ For other configs see [package.json](mdc:apps/mobile/package.json)
 We use plaind metro react native because plaid sdk does not work with expo. 
 For other configs look at [babel.config.js](mdc:apps/mobile/babel.config.js), [metro.config.js](mdc:apps/mobile/metro.config.js)
 
+ Keep in mind that we have a shared package in packages directory that will have all of the shared types between backend and mobile app. 
 
+ These are the ones that we currently have: 
 
-
-
-
+Auth types: [index.ts](mdc:packages/types/src/profile/index.ts) and for Profile [index.ts](mdc:packages/types/src/profile/index.ts)
 
 
 
