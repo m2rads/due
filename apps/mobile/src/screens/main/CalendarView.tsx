@@ -1,11 +1,12 @@
 /// <reference types="nativewind/types" />
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import {
   format,
@@ -49,10 +50,19 @@ const DAY_WIDTH = Math.floor((CONTAINER_WIDTH - (CALENDAR_PADDING * 2)) / 7); //
 const TOTAL_CALENDAR_WIDTH = DAY_WIDTH * 7;
 
 const CalendarView = ({ route, navigation }: any) => {
+  const [fadeAnim] = useState(new Animated.Value(0));
   const [currentDate, setCurrentDate] = useState(new Date());
   const today = new Date();
   const transactions = route.params?.transactions as RecurringTransactions;
   const isLoading = route.params?.isLoading ?? false;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, [transactions]);
 
   const days = eachDayOfInterval({
     start: startOfMonth(currentDate),
@@ -93,7 +103,10 @@ const CalendarView = ({ route, navigation }: any) => {
   };
 
   const EmptyStateView = () => (
-    <View className="flex-1 justify-center items-center p-8">
+    <Animated.View 
+      className="flex-1 justify-center items-center p-8"
+      style={{ opacity: fadeAnim }}
+    >
       <Calendar size={64} color="#9CA3AF" />
       <Text className="text-xl font-semibold text-gray-800 mt-6 text-center">
         No Transactions Yet
@@ -110,7 +123,7 @@ const CalendarView = ({ route, navigation }: any) => {
           Connect Bank Account
         </Text>
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   );
 
   const LoadingView = () => (
@@ -131,7 +144,10 @@ const CalendarView = ({ route, navigation }: any) => {
   }
 
   return (
-    <View className="flex-1 bg-gray-100 p-4">
+    <Animated.View 
+      className="flex-1 bg-gray-100 p-4"
+      style={{ opacity: fadeAnim }}
+    >
       <View 
         style={{ width: CONTAINER_WIDTH }}
         className="bg-white rounded-xl shadow-sm"
@@ -236,7 +252,7 @@ const CalendarView = ({ route, navigation }: any) => {
           <View className="h-4" />
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 

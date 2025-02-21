@@ -2,8 +2,9 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StatusBar } from 'react-native';
+import { StatusBar, View, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
 import { Calendar, PlusCircle, Settings } from 'lucide-react-native';
 import AddAccountScreen from './screens/main/AddAccountScreen';
@@ -36,14 +37,52 @@ const PlaidTheme = {
   },
 };
 
+const screenOptions = {
+  headerStyle: {
+    backgroundColor: '#000000',
+  },
+  headerTintColor: '#fff',
+  animation: 'slide_from_right' as const,
+  gestureEnabled: true,
+  gestureDirection: 'horizontal' as const,
+  headerTitleStyle: {
+    fontWeight: '600' as const,
+  },
+  transitionSpec: {
+    open: {
+      animation: 'timing',
+      config: {
+        duration: 300,
+      },
+    },
+    close: {
+      animation: 'timing',
+      config: {
+        duration: 300,
+      },
+    },
+  },
+} as const;
+
+const tabBarOptions = {
+  tabBarStyle: {
+    height: 90,
+  },
+  tabBarItemStyle: {
+    paddingVertical: 8,
+  },
+  tabBarActiveTintColor: '#FFFFFF',
+  tabBarInactiveTintColor: '#666666',
+  tabBarShowLabel: true,
+  tabBarHideOnKeyboard: true,
+  tabBarBackground: () => (
+    <View className="flex-1 bg-black border-t border-neutral-800" />
+  ),
+} as const;
+
 const AuthNavigator = () => (
   <AuthStack.Navigator
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: '#000000',
-      },
-      headerTintColor: '#fff',
-    }}
+    screenOptions={screenOptions}
   >
     <AuthStack.Screen 
       name="Welcome" 
@@ -70,12 +109,7 @@ const AuthNavigator = () => (
 
 const CalendarStack = () => (
   <MainStack.Navigator
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: '#000000',
-      },
-      headerTintColor: '#fff',
-    }}
+    screenOptions={screenOptions}
   >
     <MainStack.Screen
       name="Calendar"
@@ -96,18 +130,38 @@ const CalendarStack = () => (
 
 const MainNavigator = () => (
   <Tab.Navigator
-    screenOptions={{
-      tabBarStyle: {
-        backgroundColor: '#000000',
-        borderTopColor: '#333333',
-      },
-      tabBarActiveTintColor: '#FFFFFF',
-      tabBarInactiveTintColor: '#666666',
+    screenOptions={({ route }) => ({
+      ...tabBarOptions,
       headerStyle: {
         backgroundColor: '#000000',
       },
       headerTintColor: '#fff',
-    }}
+      tabBarIcon: ({ color, size }) => {
+        if (route.name === 'CalendarTab') {
+          return (
+            <View className="items-center">
+              <Calendar size={24} color={color} />
+              <Text className="text-xs mt-1" style={{ color }}>Calendar</Text>
+            </View>
+          );
+        }
+        if (route.name === 'AddAccountTab') {
+          return (
+            <View className="items-center">
+              <PlusCircle size={24} color={color} />
+              <Text className="text-xs mt-1" style={{ color }}>Add Account</Text>
+            </View>
+          );
+        }
+        return (
+          <View className="items-center">
+            <Settings size={24} color={color} />
+            <Text className="text-xs mt-1" style={{ color }}>Settings</Text>
+          </View>
+        );
+      },
+      tabBarLabel: () => null,
+    })}
   >
     <Tab.Screen
       name="CalendarTab"
@@ -115,9 +169,6 @@ const MainNavigator = () => (
       options={{
         headerShown: false,
         title: 'Calendar',
-        tabBarIcon: ({ color, size }) => (
-          <Calendar size={size} color={color} />
-        ),
       }}
     />
     <Tab.Screen
@@ -125,9 +176,6 @@ const MainNavigator = () => (
       component={AddAccountScreen}
       options={{
         title: 'Add Account',
-        tabBarIcon: ({ color, size }) => (
-          <PlusCircle size={size} color={color} />
-        ),
       }}
     />
     <Tab.Screen
@@ -135,9 +183,6 @@ const MainNavigator = () => (
       component={SettingsScreen}
       options={{
         title: 'Settings',
-        tabBarIcon: ({ color, size }) => (
-          <Settings size={size} color={color} />
-        ),
       }}
     />
   </Tab.Navigator>
@@ -160,14 +205,16 @@ const Navigation = () => {
 
 const App = (): React.ReactElement => {
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <ErrorBoundaryWrapper>
-          <Navigation />
-          <Toast />
-        </ErrorBoundaryWrapper>
-      </AuthProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <ErrorBoundaryWrapper>
+            <Navigation />
+            <Toast />
+          </ErrorBoundaryWrapper>
+        </AuthProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 };
 
