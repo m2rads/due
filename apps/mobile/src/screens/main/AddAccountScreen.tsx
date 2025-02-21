@@ -1,3 +1,4 @@
+/// <reference types="nativewind/types" />
 import React, { useState, useEffect, useCallback } from 'react';
 import { Platform, View, Text, TouchableOpacity, ActivityIndicator, Animated } from 'react-native';
 import { create, open, dismissLink, LinkSuccess, LinkExit, LinkIOSPresentationStyle, LinkLogLevel } from 'react-native-plaid-link-sdk';
