@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { supabase } from '../config/supabase';
-import { SignUpBody, SignInBody, AuthRequest } from '../types/auth';
+import { SignUpBody, SignInBody, AuthRequest } from '@due/types';
 import { createProfile, getProfileById, deleteProfile } from '../db/queries/profiles';
 
 export async function signUp(req: Request, res: Response) {

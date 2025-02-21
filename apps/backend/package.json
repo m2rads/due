@@ -21,7 +21,8 @@
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "plaid": "^30.0.0",
-    "postgres": "^3.4.5"
+    "postgres": "^3.4.5",
+    "@due/types": "*"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.5",
