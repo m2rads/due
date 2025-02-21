@@ -11,6 +11,8 @@
     "build": "turbo run build",
     "backend": "yarn workspace @due/backend dev",
     "mobile": "yarn workspace @due/mobile dev",
+    "types": "yarn workspace @due/types dev",
+    "types:build": "yarn workspace @due/types build",
     "ios": "yarn workspace @due/mobile ios:16",
     "pod": "cd apps/mobile/ios && bundle install && pod install",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" --ignore-path .gitignore",
