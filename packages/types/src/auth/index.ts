@@ -1,6 +1,6 @@
 import { User } from "@supabase/supabase-js";
 import { Request } from 'express';
-
+import { Profile } from "../profile";
 export interface AuthRequest extends Request {
   user?: User;
 }
@@ -17,11 +17,12 @@ export interface SignInBody {
 }
 
 export interface AuthResponse {
-    user: User | null
+    user: User | null;
     session: {
-        access_token: string
-        refresh_token: string
-        expires_in: number
-    } | null
-    error?: string
+      access_token: string;
+      refresh_token: string;
+      expires_in: number;
+    } | null;
+    profile: Profile | null;
+    error?: string;
 }
