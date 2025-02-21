@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import * as Keychain from 'react-native-keychain';
 import { Platform } from 'react-native';
-import { AuthResponse, SignInBody, SignUpBody } from '../types/auth';
+import { AuthResponse, SignInBody, SignUpBody } from '@due/types';
 
 interface CustomInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;

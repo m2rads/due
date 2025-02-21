@@ -14,3 +14,21 @@ The backend uses PLaid SDK to grab the recurring transactions from the users ban
 
  For Drizzle configs: 
  [drizzle.config.ts](mdc:apps/backend/drizzle.config.ts), [index.ts](mdc:apps/backend/src/db/index.ts)
+
+ Keep in mind that we have a shared package in packages directory that will have all of the shared types between backend and mobile app. 
+
+ These are the ones that we currently have: 
+
+Auth types: [index.ts](mdc:packages/types/src/auth/index.ts) and for Profile [index.ts](mdc:packages/types/src/profile/index.ts)
+
+
+
+
+
+
+
+
+
+
+
+
