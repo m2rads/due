@@ -119,6 +119,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setState(prev => ({ ...prev, error: null }));
   };
 
+  const deleteAccount = async () => {
+    try {
+      setState(prev => ({ ...prev, isLoading: true }));
+      await authAPI.deleteAccount();
+      // Clear auth state without calling signOut API endpoint
+      await Keychain.resetGenericPassword({ service: 'auth' });
+      setState({ ...initialState, isLoading: false });
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || 'Failed to delete account';
+      setState(prev => ({ ...prev, isLoading: false, error: errorMessage }));
+      throw new Error(errorMessage);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -127,6 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signUp,
         signOut,
         clearError,
+        deleteAccount,
       }}
     >
       {children}
