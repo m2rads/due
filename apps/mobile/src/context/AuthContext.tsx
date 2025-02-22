@@ -31,18 +31,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (credentials) {
         const response = await authAPI.getMe();
-        setState({
-          isAuthenticated: true,
-          isLoading: false,
-          user: response.user,
-          profile: response.profile || null,
-          error: null,
-        });
+        if (response) {
+          setState({
+            isAuthenticated: true,
+            isLoading: false,
+            user: response.user,
+            profile: response.profile || null,
+            error: null,
+          });
+        } else {
+          // Invalid or expired session
+          await authAPI.clearAuthState();
+          setState({ ...initialState, isLoading: false });
+        }
       } else {
         setState({ ...initialState, isLoading: false });
       }
     } catch (error) {
       console.error('Auth check error:', error);
+      // Clear auth state on error
+      await authAPI.clearAuthState();
       setState({ ...initialState, isLoading: false });
     }
   };

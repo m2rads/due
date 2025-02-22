@@ -200,15 +200,31 @@ export const authAPI = {
     }
   },
 
-  async getMe(): Promise<AuthResponse> {
+  async getMe(): Promise<AuthResponse | null> {
     try {
+      const credentials = await Keychain.getGenericPassword({
+        service: 'auth'
+      });
+
+      if (!credentials) {
+        // No credentials, return null instead of throwing
+        return null;
+      }
+
       const response = await api.get<AuthResponse>('/auth/me');
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.error || 'Failed to get user data');
+        // Handle specific error cases
+        if (error.response?.status === 401) {
+          // Token expired or invalid, clear auth state
+          await this.clearAuthState();
+          return null;
+        }
+        console.error('Get user error:', error.response?.data);
       }
-      throw error;
+      // For other errors, return null instead of throwing
+      return null;
     }
   },
 };
