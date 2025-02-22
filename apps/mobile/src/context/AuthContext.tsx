@@ -29,28 +29,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         service: 'auth'
       });
       
-      if (credentials) {
-        const response = await authAPI.getMe();
-        if (response) {
-          setState({
-            isAuthenticated: true,
-            isLoading: false,
-            user: response.user,
-            profile: response.profile || null,
-            error: null,
-          });
-        } else {
-          // Invalid or expired session
-          await authAPI.clearAuthState();
-          setState({ ...initialState, isLoading: false });
-        }
+      if (!credentials) {
+        // No credentials means not authenticated - normal state
+        setState({ ...initialState, isLoading: false });
+        return;
+      }
+
+      const response = await authAPI.getMe();
+      if (response?.user) {
+        // Valid session
+        setState({
+          isAuthenticated: true,
+          isLoading: false,
+          user: response.user,
+          profile: response.profile || null,
+          error: null,
+        });
       } else {
+        // Invalid/expired session - normal state
         setState({ ...initialState, isLoading: false });
       }
     } catch (error) {
-      console.error('Auth check error:', error);
-      // Clear auth state on error
-      await authAPI.clearAuthState();
+      // Only unexpected errors should be logged
+      if (!(error instanceof Error && error.message.includes('auth'))) {
+        console.error('Unexpected error during auth check:', error);
+      }
       setState({ ...initialState, isLoading: false });
     }
   };
