@@ -1,44 +1,55 @@
 /// <reference types="nativewind/types" />
-import React, { useState, useEffect, useCallback } from 'react';
-import { Platform, View, Text, TouchableOpacity, ActivityIndicator, Animated } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Platform, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { create, open, dismissLink, LinkSuccess, LinkExit, LinkIOSPresentationStyle, LinkLogLevel } from 'react-native-plaid-link-sdk';
 
 const AddAccountScreen = ({ navigation }: any) => {
   const [linkToken, setLinkToken] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [fadeAnim] = useState(new Animated.Value(0));
   const address = Platform.OS === 'ios' ? 'localhost' : '10.0.2.2';
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
+    // Initial Plaid Link setup
+    createAndConfigureLink();
+
+    return () => {
+      dismissLink();
+    };
   }, []);
 
-  const createLinkToken = useCallback(async () => {
-    console.log('Creating link token for platform:', Platform.OS);
-    await fetch(`http://${address}:8080/api/create_link_token`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ address: address })
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('Link token created successfully');
-        setLinkToken(data.link_token);
-      })
-      .catch((err) => {
-        console.error('Error creating link token:', err);
+  const createAndConfigureLink = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`http://${address}:8080/api/create_link_token`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ address: address })
       });
-  }, [setLinkToken]);
+
+      if (!response.ok) {
+        throw new Error('Failed to create link token');
+      }
+
+      const data = await response.json();
+      
+      // Configure Plaid Link with new token
+      await create({
+        token: data.link_token,
+        noLoadingState: false,
+      });
+      
+      setLinkToken(data.link_token);
+    } catch (err) {
+      console.error('Error creating/configuring link:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchRecurringTransactions = async () => {
     try {
-      console.log('Fetching recurring transactions');
       const response = await fetch(`http://${address}:8080/api/recurring_transactions`, {
         method: "POST",
         headers: {
@@ -51,7 +62,6 @@ const AddAccountScreen = ({ navigation }: any) => {
       }
 
       const data = await response.json();
-      console.log('Transactions fetched successfully');
       return data.recurring_transactions;
     } catch (error) {
       console.error('Error fetching transactions:', error);
@@ -59,73 +69,62 @@ const AddAccountScreen = ({ navigation }: any) => {
     }
   };
 
-  useEffect(() => {
-    console.log('HomeScreen mounted, linkToken:', linkToken);
-    if (linkToken == null) {
-      createLinkToken();
-    } else {
-      console.log('Creating token configuration');
-      const tokenConfiguration = createLinkTokenConfiguration(linkToken);
-      create(tokenConfiguration);
+  const handleOpenLink = async () => {
+    try {
+      if (!linkToken) {
+        await createAndConfigureLink();
+      }
+
+      const openProps = {
+        onSuccess: async (success: LinkSuccess) => {
+          try {
+            setLoading(true);
+            const exchangeResponse = await fetch(`http://${address}:8080/api/exchange_public_token`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ public_token: success.publicToken }),
+            });
+
+            if (!exchangeResponse.ok) {
+              throw new Error('Failed to exchange public token');
+            }
+
+            const transactions = await fetchRecurringTransactions();
+            navigation.navigate('Calendar', { 
+              transactions,
+              isLoading: false 
+            });
+          } catch (error) {
+            console.error('Error in onSuccess:', error);
+            navigation.navigate('Calendar', { 
+              transactions: null,
+              isLoading: false 
+            });
+          } finally {
+            setLoading(false);
+          }
+        },
+        onExit: async (linkExit: LinkExit) => {
+          if (linkExit?.error?.errorCode) {
+            console.error('Plaid Link error:', linkExit.error);
+          }
+          await dismissLink();
+          setLinkToken(null);
+          await createAndConfigureLink();
+        },
+        iOSPresentationStyle: LinkIOSPresentationStyle.MODAL,
+        logLevel: Platform.OS === 'ios' ? LinkLogLevel.ERROR : LinkLogLevel.DEBUG,
+      };
+
+      await open(openProps);
+    } catch (error) {
+      console.error('Error opening Plaid Link:', error);
+      await dismissLink();
+      setLinkToken(null);
+      await createAndConfigureLink();
     }
-  }, [linkToken]);
-
-  const createLinkTokenConfiguration = (token: string, noLoadingState: boolean = false) => {
-    console.log('Creating token configuration with:', { token, noLoadingState });
-    return {
-      token: token,
-      noLoadingState: noLoadingState,
-    };
-  };
-
-  const createLinkOpenProps = () => {
-    console.log('Creating link open props');
-    return {
-      onSuccess: async (success: LinkSuccess) => {
-        try {
-          setLoading(true);
-          console.log('Plaid Link success, exchanging public token');
-          await fetch(`http://${address}:8080/api/exchange_public_token`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ public_token: success.publicToken }),
-          });
-          console.log('Public token exchanged successfully');
-          
-          // Fetch recurring transactions
-          const transactions = await fetchRecurringTransactions();
-          console.log('Navigating to Calendar with transactions');
-          // Navigate with transactions, no loading state needed
-          navigation.navigate('Calendar', { 
-            transactions,
-            isLoading: false 
-          });
-        } catch (error) {
-          console.error('Error in onSuccess:', error);
-          // Navigate to Calendar with no transactions but not in loading state
-          navigation.navigate('Calendar', { 
-            transactions: null,
-            isLoading: false 
-          });
-        } finally {
-          setLoading(false);
-        }
-      },
-      onExit: (linkExit: LinkExit) => {
-        console.log('Plaid Link exit:', linkExit);
-        dismissLink();
-      },
-      iOSPresentationStyle: LinkIOSPresentationStyle.MODAL,
-      logLevel: LinkLogLevel.ERROR,
-    };
-  };
-
-  const handleOpenLink = () => {
-    console.log('Opening Plaid Link');
-    const openProps = createLinkOpenProps();
-    open(openProps);
   };
 
   if (loading) {
@@ -138,24 +137,27 @@ const AddAccountScreen = ({ navigation }: any) => {
   }
 
   return (
-    <Animated.View className="flex-1" style={{ opacity: fadeAnim }}>
-      <View className="items-center px-8 justify-start bg-white pb-8">
-        <Text className="text-3xl font-bold text-center mt-9 mb-4">
+    <View className="flex-1 bg-white">
+      <View className="items-center px-8 pt-9">
+        <Text className="text-3xl font-bold text-black text-center mb-4">
           Due
         </Text>
         <Text className="text-base text-gray-600 text-center mb-6">
           Connect your bank account to manage your recurring payments
         </Text>
       </View>
-      <View className="flex-1 justify-end bg-white px-8 pb-8">
+      <View className="flex-1 justify-end px-8 pb-8">
         <TouchableOpacity
           onPress={handleOpenLink}
+          disabled={loading}
           className="bg-black py-4 rounded-xl flex-row items-center justify-center"
         >
-          <Text className="text-white font-semibold text-lg">Connect Bank Account</Text>
+          <Text className="text-white font-semibold text-lg">
+            Connect Bank Account
+          </Text>
         </TouchableOpacity>
       </View>
-    </Animated.View>
+    </View>
   );
 };
 
