@@ -9,8 +9,58 @@ import {
   unlinkBankConnection as unlinkBank,
   checkDuplicateConnection 
 } from '../db/queries/bank-connections';
+import { logger, extractRequestInfo } from '../utils/logger';
+
+const PLAID_TIMEOUT = 30000; // 30 seconds
+const MAX_RETRIES = 3;
+
+interface PlaidError extends Error {
+  response?: {
+    status: number;
+    data?: {
+      error_message?: string;
+    };
+  };
+}
+
+interface PlaidResponse<T> {
+  data: T;
+}
+
+function isPlaidError(error: unknown): error is PlaidError {
+  return error instanceof Error && 'response' in error;
+}
+
+async function withRetry<T>(operation: () => Promise<T>): Promise<T> {
+  let lastError: PlaidError | Error = new Error('Unknown error');
+  for (let i = 0; i < MAX_RETRIES; i++) {
+    try {
+      return await Promise.race([
+        operation(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('TIMEOUT')), PLAID_TIMEOUT)
+        )
+      ]) as T;
+    } catch (error) {
+      if (error instanceof Error) {
+        lastError = error;
+        if (error.message === 'TIMEOUT' || 
+            (isPlaidError(error) && error.response && 
+             (error.response.status >= 500 || error.response.status === 429))) {
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+          continue;
+        }
+      }
+      throw lastError;
+    }
+  }
+  throw lastError;
+}
 
 export async function createLinkToken(req: Request, res: Response, next: NextFunction) {
+  const reqInfo = extractRequestInfo(req);
+  logger.info('Creating Plaid link token', { ...reqInfo });
+  
   try {
     const { address } = req.body as CreateLinkTokenRequest;
     
@@ -33,30 +83,43 @@ export async function createLinkToken(req: Request, res: Response, next: NextFun
         };
 
     const tokenResponse = await plaidClient.linkTokenCreate(payload);
+    logger.info('Successfully created Plaid link token', { ...reqInfo });
     res.json(tokenResponse.data);
   } catch (error) {
+    logger.error('Failed to create Plaid link token', { 
+      ...reqInfo, 
+      error: isPlaidError(error) ? error.response?.data?.error_message : error 
+    });
     next(error);
   }
 }
 
 export async function exchangePublicToken(req: Request, res: Response, next: NextFunction) {
+  const reqInfo = extractRequestInfo(req);
+  logger.info('Exchanging Plaid public token', { ...reqInfo });
+  
   try {
     const { public_token, institutionId, institutionName } = req.body as ExchangeTokenRequest;
     
-    // Check for duplicate connection
     const hasDuplicate = await checkDuplicateConnection(req.sessionID, institutionId);
     if (hasDuplicate) {
+      logger.warn('Duplicate bank connection attempt', { 
+        ...reqInfo, 
+        institutionId 
+      });
       return res.status(409).json({ 
         error: 'DUPLICATE_CONNECTION',
         message: 'Bank account already connected' 
       });
     }
 
-    const exchangeResponse = await plaidClient.itemPublicTokenExchange({
-      public_token,
-    });
+    const exchangeResponse = await withRetry(() => 
+      plaidClient.itemPublicTokenExchange({ public_token })
+    ) as PlaidResponse<{
+      access_token: string;
+      item_id: string;
+    }>;
 
-    // Save the connection in database
     const connection = await createBankConnection(req.sessionID, {
       plaidAccessToken: exchangeResponse.data.access_token,
       plaidItemId: exchangeResponse.data.item_id,
@@ -64,18 +127,30 @@ export async function exchangePublicToken(req: Request, res: Response, next: Nex
       institutionName
     });
 
+    logger.info('Successfully created bank connection', { 
+      ...reqInfo, 
+      connectionId: connection.id,
+      institutionId 
+    });
+
     req.session.access_token = exchangeResponse.data.access_token;
     res.json({ success: true, connection });
   } catch (error) {
-    if (error instanceof Error) {
-      console.error('Error exchanging token:', error);
-      if ('response' in error) {
-        return res.status(400).json({ 
-          error: 'PLAID_EXCHANGE_ERROR',
-          message: 'Failed to connect bank account' 
-        });
-      }
+    if (isPlaidError(error)) {
+      logger.error('Failed to exchange Plaid token', { 
+        ...reqInfo, 
+        error: error.response?.data?.error_message 
+      });
+      return res.status(400).json({ 
+        error: 'PLAID_EXCHANGE_ERROR',
+        message: 'Failed to connect bank account',
+        details: error.response?.data?.error_message 
+      });
     }
+    logger.error('Unexpected error during token exchange', { 
+      ...reqInfo, 
+      error 
+    });
     next(error);
   }
 }
