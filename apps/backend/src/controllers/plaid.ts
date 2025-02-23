@@ -2,22 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import { Products, CountryCode } from 'plaid';
 import { CreateLinkTokenRequest, ExchangeTokenRequest } from '../types/plaid';
 import { plaidClient } from '../config/plaid';
-import { AuthRequest } from '../types/auth';
-import { 
-  createBankConnection, 
-  checkDuplicateConnection,
-  getUserBankConnections,
-  unlinkBankConnection 
-} from '../db/queries/bank-connections';
 
 export async function createLinkToken(req: Request, res: Response, next: NextFunction) {
   try {
     const { address } = req.body as CreateLinkTokenRequest;
-    const userId = (req as AuthRequest).user.id;
     
     const payload = address === 'localhost'
       ? {
-          user: { client_user_id: userId },
+          user: { client_user_id: req.sessionID },
           client_name: 'Plaid Tiny Quickstart - React Native',
           language: 'en',
           products: ['auth', 'transactions'] as Products[],
@@ -25,7 +17,7 @@ export async function createLinkToken(req: Request, res: Response, next: NextFun
           redirect_uri: process.env.PLAID_SANDBOX_REDIRECT_URI,
         }
       : {
-          user: { client_user_id: userId },
+          user: { client_user_id: req.sessionID },
           client_name: 'Due',
           language: 'en',
           products: ['auth', 'transactions'] as Products[],
@@ -43,43 +35,28 @@ export async function createLinkToken(req: Request, res: Response, next: NextFun
 export async function exchangePublicToken(req: Request, res: Response, next: NextFunction) {
   try {
     const { public_token } = req.body as ExchangeTokenRequest;
-    const userId = (req as AuthRequest).user.id;
     
-    // Exchange public token
     const exchangeResponse = await plaidClient.itemPublicTokenExchange({
       public_token,
     });
 
-    // Get institution details
-    const itemResponse = await plaidClient.itemGet({
-      access_token: exchangeResponse.data.access_token
-    });
+    req.session.access_token = exchangeResponse.data.access_token;
+    res.json(true);
+  } catch (error) {
+    next(error);
+  }
+}
 
-    const institutionId = itemResponse.data.item.institution_id;
-    
-    // Check for duplicate connection
-    const isDuplicate = await checkDuplicateConnection(userId, institutionId!);
-    if (isDuplicate) {
-      return res.status(400).json({ 
-        error: 'Bank account already connected' 
-      });
+export async function getBalance(req: Request, res: Response, next: NextFunction) {
+  try {
+    const access_token = req.session.access_token;
+    if (!access_token) {
+      return res.status(400).json({ error: 'No access token found' });
     }
 
-    // Create bank connection
-    const connection = await createBankConnection(userId, {
-      plaidAccessToken: exchangeResponse.data.access_token,
-      plaidItemId: exchangeResponse.data.item_id,
-      institutionId: institutionId!,
-      institutionName: itemResponse.data.item.institution_id // We'll get proper name in production
-    });
-
+    const balanceResponse = await plaidClient.accountsBalanceGet({ access_token });
     res.json({
-      success: true,
-      connection: {
-        id: connection.id,
-        institutionName: connection.institutionName,
-        status: connection.status
-      }
+      Balance: balanceResponse.data,
     });
   } catch (error) {
     next(error);
@@ -88,81 +65,50 @@ export async function exchangePublicToken(req: Request, res: Response, next: Nex
 
 export async function getRecurringTransactions(req: Request, res: Response, next: NextFunction) {
   try {
-    const userId = (req as AuthRequest).user.id;
+    const access_token = req.session.access_token;
     
-    // Get user's active bank connections
-    const connections = await getUserBankConnections(userId);
-    
-    if (!connections.length) {
+    if (!access_token) {
       return res.status(400).json({ 
-        error: 'No active bank connections found' 
+        error: 'No access token available. Please reconnect your bank account.' 
       });
     }
 
-    // Get transactions for all connections
-    const allTransactions = await Promise.all(
-      connections.map(async (connection) => {
-        try {
-          // Get accounts for this connection
-          const accountsResponse = await plaidClient.accountsGet({
-            access_token: connection.plaidAccessToken
+    const accountsResponse = await plaidClient.accountsGet({
+      access_token
+    });
+    
+    const account_ids = accountsResponse.data.accounts.map(account => account.account_id);
+    
+    if (!account_ids.length) {
+      return res.status(400).json({ 
+        error: 'No accounts found for this access token.' 
+      });
+    }
+
+    const recurringResponse = await plaidClient.transactionsRecurringGet({
+      access_token,
+      account_ids
+    });
+    
+    res.json({
+      recurring_transactions: recurringResponse.data
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Error fetching recurring transactions:', error);
+      
+      if ('response' in error && error.response) {
+        const plaidError = error.response as { status?: number; data?: unknown };
+        if (plaidError.status === 400) {
+          return res.status(400).json({ 
+            error: 'Invalid request to Plaid API. Please check your connection and try again.' 
           });
-          
-          const account_ids = accountsResponse.data.accounts.map(account => account.account_id);
-          
-          // Get recurring transactions
-          const recurringResponse = await plaidClient.transactionsRecurringGet({
-            access_token: connection.plaidAccessToken,
-            account_ids
-          });
-          
-          return recurringResponse.data;
-        } catch (error) {
-          console.error(`Error fetching transactions for connection ${connection.id}:`, error);
-          return null;
         }
-      })
-    );
-
-    // Filter out failed requests and combine transactions
-    const validTransactions = allTransactions.filter(t => t !== null);
+      }
+    }
     
-    res.json({
-      recurring_transactions: validTransactions
+    res.status(500).json({ 
+      error: 'Failed to fetch recurring transactions. Please try again later.' 
     });
-  } catch (error) {
-    next(error);
-  }
-}
-
-export async function getBankConnections(req: Request, res: Response, next: NextFunction) {
-  try {
-    const userId = (req as AuthRequest).user.id;
-    const connections = await getUserBankConnections(userId);
-    
-    res.json({
-      connections: connections.map(conn => ({
-        id: conn.id,
-        institutionName: conn.institutionName,
-        status: conn.status,
-        itemStatus: conn.itemStatus,
-        lastStatusUpdate: conn.lastStatusUpdate
-      }))
-    });
-  } catch (error) {
-    next(error);
-  }
-}
-
-export async function unlinkBank(req: Request, res: Response, next: NextFunction) {
-  try {
-    const userId = (req as AuthRequest).user.id;
-    const { connectionId } = req.params;
-    
-    await unlinkBankConnection(userId, connectionId);
-    
-    res.json({ success: true });
-  } catch (error) {
-    next(error);
   }
 }
