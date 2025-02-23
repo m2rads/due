@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "generate": "drizzle-kit generate",
-    "link:db": "npx supabase db link",
+    "link:db": "npx supabase link",
     "migrate": "npx supabase db push",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
