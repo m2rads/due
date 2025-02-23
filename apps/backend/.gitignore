@@ -31,3 +31,6 @@ yarn-error.log*
 # Supabase
 .branches
 .temp
+
+# Logs 
+logs
