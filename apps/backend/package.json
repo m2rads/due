@@ -13,6 +13,7 @@
     "test": "jest --coverage"
   },
   "dependencies": {
+    "@due/types": "*",
     "@supabase/supabase-js": "^2.48.1",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
@@ -22,7 +23,9 @@
     "express-session": "^1.17.3",
     "plaid": "^30.0.0",
     "postgres": "^3.4.5",
-    "@due/types": "*"
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.5",
@@ -31,6 +34,8 @@
     "@types/express-session": "^1.17.10",
     "@types/jest": "^29.5.10",
     "@types/node": "^20.10.0",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^6.12.0",
     "@typescript-eslint/parser": "^6.12.0",
     "drizzle-kit": "^0.30.4",
