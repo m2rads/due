@@ -4,6 +4,8 @@ export interface CreateLinkTokenRequest {
 
 export interface ExchangeTokenRequest {
   public_token: string;
+  institutionId: string;
+  institutionName?: string;
 }
 
 export interface PlaidBalanceResponse {
@@ -12,4 +14,8 @@ export interface PlaidBalanceResponse {
 
 export interface PlaidRecurringResponse {
   recurring_transactions: unknown; // TODO: Type this properly
+}
+
+export interface UnlinkBankRequest {
+  reason?: string;
 }
