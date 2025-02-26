@@ -43,7 +43,7 @@ api.interceptors.request.use(async (config) => {
       service: 'auth'
     });
     if (credentials) {
-      // Use access token (username) for Authorization header
+      // Use username as access token
       config.headers.Authorization = `Bearer ${credentials.username}`;
     }
   } catch (error) {
@@ -142,7 +142,7 @@ export const authAPI = {
     try {
       const response = await api.post<AuthResponse>('/auth/signup', data);
       if (response.data.session?.access_token && response.data.session?.refresh_token) {
-        // Store both tokens
+        // Store access token as username and refresh token as password
         await Keychain.setGenericPassword(
           response.data.session.access_token,
           response.data.session.refresh_token,
@@ -164,7 +164,7 @@ export const authAPI = {
     try {
       const response = await api.post<AuthResponse>('/auth/signin', credentials);
       if (response.data.session?.access_token && response.data.session?.refresh_token) {
-        // Store both tokens
+        // Store access token as username and refresh token as password
         await Keychain.setGenericPassword(
           response.data.session.access_token,
           response.data.session.refresh_token,
