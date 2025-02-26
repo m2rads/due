@@ -339,26 +339,39 @@ const AddAccountScreen = ({ navigation }: any) => {
             }
 
             console.log('Plaid Link success for:', success.metadata.institution.name);
+            
+            // First mark connecting as complete to update UI
+            setConnectionState(prev => ({ ...prev, isConnecting: false, error: null }));
+            
+            // Show a temporary success toast
+            Toast.show({
+              type: 'success',
+              text1: 'Connecting Bank',
+              text2: `Connecting ${success.metadata.institution.name}...`
+            });
+            
+            // Exchange the public token for permanent credentials
             const connection = await handleExchangeToken(success.publicToken, success.metadata);
             
+            // Show final success message
             Toast.show({
               type: 'success',
               text1: 'Bank Connected',
               text2: `Successfully connected ${success.metadata.institution.name}`
             });
 
-            // First mark connection as complete
-            setConnectionState(prev => ({ ...prev, isConnecting: false, error: null }));
-
             // Navigate back to calendar with a fresh flag, but don't try to pre-load transactions
             // Let the Calendar component handle that to avoid race conditions
-            navigation.navigate('CalendarTab', { 
-              screen: 'Calendar',
-              params: {
-                freshlyLinked: true,
-                timestamp: Date.now() // Force refresh even if navigating to the same screen
-              }
-            });
+            // Add a small delay to ensure all state updates have completed
+            setTimeout(() => {
+              navigation.navigate('CalendarTab', { 
+                screen: 'Calendar',
+                params: {
+                  freshlyLinked: true,
+                  timestamp: Date.now() // Force refresh even if navigating to the same screen
+                }
+              });
+            }, 300);
           } catch (error: any) {
             console.error('Error handling Plaid success:', error);
             const errorMessage = error.message || 'Failed to complete bank connection';
@@ -439,10 +452,17 @@ const AddAccountScreen = ({ navigation }: any) => {
   const handleUnlink = async (connection: BankConnection) => {
     try {
       console.log('Unlinking bank connection:', connection.id, connection.institutionName);
+      
+      // First update the local state immediately before API call
+      // This ensures UI is responsive and any checks for active connections
+      // will reflect the removal immediately
+      setConnections(prev => prev.filter(c => c.id !== connection.id));
+      
+      // Then make the API call
       await plaidService.unlinkBankConnection(connection.id, 'user_requested');
       
-      // Update local state immediately
-      setConnections(prev => prev.filter(c => c.id !== connection.id));
+      // Make sure to properly invalidate transaction cache
+      plaidService.invalidateTransactionCache();
       
       Toast.show({
         type: 'success',
@@ -450,16 +470,26 @@ const AddAccountScreen = ({ navigation }: any) => {
         text2: `Successfully unlinked ${connection.institutionName}`
       });
       
-      // Navigate to Calendar with unlinked flag to trigger refresh
-      navigation.navigate('CalendarTab', {
-        screen: 'Calendar',
-        params: {
-          unlinked: true,
-          timestamp: Date.now() // Force refresh
-        }
-      });
+      // Store reference to timeout so component unmount can clear it
+      const navigationTimeoutRef = setTimeout(() => {
+        // Navigate to Calendar with unlinked flag to trigger refresh
+        navigation.navigate('CalendarTab', {
+          screen: 'Calendar',
+          params: {
+            unlinked: true,
+            timestamp: Date.now() // Force refresh
+          }
+        });
+      }, 500); // Increased delay to allow backend to process unlink fully
+      
+      // Clean up timeout if component unmounts
+      return () => clearTimeout(navigationTimeoutRef);
     } catch (error: any) {
       console.error('Error unlinking bank:', error);
+      
+      // Restore the connection in local state if API call failed
+      loadConnections();
+      
       Toast.show({
         type: 'error',
         text1: 'Error',

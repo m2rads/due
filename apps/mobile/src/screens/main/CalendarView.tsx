@@ -167,11 +167,23 @@ const CalendarView = () => {
   const route = useRoute();
   const params = route.params as RouteParams | undefined;
   
+  // Debug renders with a counter
+  const renderCountRef = useRef(0);
+  
+  // Log every render for debugging
+  console.log(`[CalendarView] Rendering (${++renderCountRef.current})`);
+  
   const [selectedConnection, setSelectedConnection] = useState<BankConnection | null>(null);
   const [isReconnecting, setIsReconnecting] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const today = new Date();
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Add a ref to track navigation params to prevent repeated effect executions
+  const paramsRef = useRef({
+    processed: false,
+    timestamp: params?.timestamp || 0
+  });
   
   const [transactions, setTransactions] = useState<TransactionState>({
     data: params?.transactions || null,
@@ -188,14 +200,16 @@ const CalendarView = () => {
   } = useBankConnections();
 
   // Load transactions only when explicitly requested
-  const loadTransactions = useCallback(async () => {
+  const loadTransactions = useCallback(async (forceRefresh = false) => {
     if (isLoading) {
       console.log('[CalendarView] Already loading transactions, skipping');
       return;
     }
 
+    // Double check for active connections - this prevents unnecessary API calls
+    // especially after unlinking an account
     if (!hasActiveConnections()) {
-      console.log('[CalendarView] No active connections, skipping transaction load');
+      console.log('[CalendarView] No active connections, setting empty transactions');
       setTransactions({
         data: { inflow_streams: [], outflow_streams: [] },
         isLoading: false,
@@ -205,11 +219,12 @@ const CalendarView = () => {
     }
 
     try {
-      console.log('[CalendarView] Loading transactions...');
+      console.log(`[CalendarView] Loading transactions... (forceRefresh: ${forceRefresh})`);
       setIsLoading(true);
       setTransactions(prev => ({ ...prev, isLoading: true }));
 
-      const response = await plaidService.getRecurringTransactions();
+      // Pass forceRefresh parameter to the service call
+      const response = await plaidService.getRecurringTransactions(forceRefresh);
       
       if (!response || !Array.isArray(response) || response.length === 0) {
         console.log('[CalendarView] Empty response from getRecurringTransactions');
@@ -233,29 +248,160 @@ const CalendarView = () => {
     } catch (error) {
       console.error('[CalendarView] Error loading transactions:', error);
       
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Failed to load transactions'
-      });
+      // Only show error toast for unexpected errors
+      // Prevent showing error toasts for expected scenarios (like right after unlinking)
+      const is400Error = error.response?.status === 400;
       
-      // Keep any existing data on error
-      setTransactions(prev => ({
-        ...prev,
-        isLoading: false,
-        error: 'Failed to load transactions'
-      }));
+      if (!is400Error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Failed to load transactions'
+        });
+      } else {
+        console.log('[CalendarView] Received 400 error, likely after unlinking account');
+      }
+      
+      // Set empty data on 400 errors - typically means no active connections
+      // or backend is in an invalid state after account changes
+      if (is400Error) {
+        setTransactions({
+          data: { inflow_streams: [], outflow_streams: [] },
+          isLoading: false,
+          error: null
+        });
+      } else {
+        // For other errors, keep existing data but mark error
+        setTransactions(prev => ({
+          ...prev,
+          isLoading: false,
+          error: 'Failed to load transactions'
+        }));
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [hasActiveConnections]);
+  }, [hasActiveConnections, isLoading]);
 
-  // Simple refresh handler - one button, one purpose
+  // Use this instead of multiple useEffects to handle focus events better
+  useFocusEffect(
+    useCallback(() => {
+      console.log('[CalendarView] Screen focused');
+      
+      // Track any timeouts we create so we can clean them up
+      const timeoutRefs: NodeJS.Timeout[] = [];
+      
+      // Process navigation params only once when screen is focused
+      if (params && 
+          (params.freshlyLinked || params.unlinked || params.transactions) && 
+          (!paramsRef.current.processed || paramsRef.current.timestamp !== params.timestamp)) {
+        
+        console.log('[CalendarView] Processing navigation params on focus');
+        
+        // Mark as processed with current timestamp
+        paramsRef.current = {
+          processed: true,
+          timestamp: params.timestamp || 0
+        };
+        
+        // Process the params similarly to the previous useEffect
+        if (params.transactions) {
+          console.log('[CalendarView] Using transactions from params');
+          setTransactions({
+            data: params.transactions,
+            isLoading: false,
+            error: null
+          });
+        } else if (params.freshlyLinked || params.unlinked) {
+          if (params.unlinked) {
+            console.log('[CalendarView] Account unlinked, checking for active connections');
+            // First verify if we have any active connections left
+            refreshConnections().then(() => {
+              // Check after refreshing connection list
+              if (!hasActiveConnections()) {
+                console.log('[CalendarView] No active connections after unlinking, showing empty state');
+                setTransactions({
+                  data: { inflow_streams: [], outflow_streams: [] },
+                  isLoading: false,
+                  error: null
+                });
+              } else {
+                // If we still have active connections, load transactions after a delay
+                console.log('[CalendarView] Still have active connections after unlinking, loading transactions');
+                const timeoutId = setTimeout(() => {
+                  loadTransactions(true);
+                }, 500);
+                timeoutRefs.push(timeoutId);
+              }
+            });
+          } else if (params.freshlyLinked) {
+            console.log('[CalendarView] Freshly linked account detected, loading with longer delay');
+            
+            // Show loading state immediately
+            setTransactions(prev => ({ ...prev, isLoading: true }));
+            
+            // For newly linked accounts, use a longer delay
+            // The backend needs more time to process the new account
+            const timeoutId = setTimeout(() => {
+              // Load transactions with force refresh to bypass cache
+              loadTransactions(true).catch(error => {
+                console.error('[CalendarView] Error loading transactions after linking:', error);
+                
+                // Even on error, still show empty state rather than error
+                setTransactions({
+                  data: { inflow_streams: [], outflow_streams: [] },
+                  isLoading: false,
+                  error: null
+                });
+              });
+            }, 800); // Longer delay for freshly linked accounts
+            
+            timeoutRefs.push(timeoutId);
+          }
+        }
+      }
+      
+      // Cleanup function for when screen loses focus
+      return () => {
+        console.log('[CalendarView] Screen unfocused - cleaning up');
+        
+        // Clear any timeouts we created
+        timeoutRefs.forEach(id => clearTimeout(id));
+      };
+    }, [params, hasActiveConnections, loadTransactions, refreshConnections])
+  );
+
+  // Replace the previous useEffect with this simplified one that only runs once on mount
+  useEffect(() => {
+    console.log('[CalendarView] Component mounted');
+    
+    // Only load on first mount if no params were provided
+    if (!params?.transactions && !params?.freshlyLinked && !params?.unlinked) {
+      console.log('[CalendarView] Initial load on mount');
+      
+      if (hasActiveConnections()) {
+        loadTransactions();
+      } else {
+        console.log('[CalendarView] No active connections on mount');
+        setTransactions({
+          data: { inflow_streams: [], outflow_streams: [] },
+          isLoading: false,
+          error: null
+        });
+      }
+    }
+    
+    return () => {
+      console.log('[CalendarView] Component unmounted');
+    };
+  }, []); // Empty dependency array - only run once on mount
+
   const handleRefresh = useCallback(async () => {
     console.log('[CalendarView] Manual refresh initiated');
     try {
       await refreshConnections();
-      await loadTransactions();
+      // Use forceRefresh=true to bypass cache
+      await loadTransactions(true);
       Toast.show({
         type: 'success',
         text1: 'Data Refreshed'
@@ -286,24 +432,6 @@ const CalendarView = () => {
       setIsReconnecting(false);
     }
   };
-
-  // Only load transactions once on mount or when freshly linked
-  useEffect(() => {
-    // If provided via params, use those transactions
-    if (params?.transactions) {
-      console.log('[CalendarView] Using transactions from params');
-      setTransactions({
-        data: params.transactions,
-        isLoading: false,
-        error: null
-      });
-    } 
-    // Otherwise, only load when freshly linked or unlinked
-    else if (params?.freshlyLinked || params?.unlinked) {
-      console.log('[CalendarView] Fresh connection detected, loading transactions');
-      loadTransactions();
-    }
-  }, [params?.transactions, params?.freshlyLinked, params?.unlinked, loadTransactions]);
 
   const erroredConnections = getErroredConnections();
   
@@ -366,7 +494,7 @@ const CalendarView = () => {
   const firstDayOffset = getDay(startOfMonth(currentDate));
 
   // Loading view for transactions loading
-  const LoadingView = () => {
+  const LoadingView = useCallback(() => {
     if (!transactions.isLoading) {
       return null;
     }
@@ -386,7 +514,7 @@ const CalendarView = () => {
         <Text style={{ fontSize: 12, color: '#888888' }}>Loading transactions...</Text>
       </View>
     );
-  };
+  }, [transactions.isLoading]);
 
   return (
     <ScrollView 
