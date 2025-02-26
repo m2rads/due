@@ -10,6 +10,7 @@ import {
   checkDuplicateConnection 
 } from '../db/queries/bank-connections';
 import { logger, extractRequestInfo } from '../utils/logger';
+import { AuthRequest } from '../types/auth';
 
 const PLAID_TIMEOUT = 30000; // 30 seconds
 const MAX_RETRIES = 3;
@@ -63,10 +64,11 @@ export async function createLinkToken(req: Request, res: Response, next: NextFun
   
   try {
     const { address } = req.body as CreateLinkTokenRequest;
+    const userId = (req as AuthRequest).user.id;
     
     const payload = address === 'localhost'
       ? {
-          user: { client_user_id: req.sessionID },
+          user: { client_user_id: userId },
           client_name: 'Plaid Tiny Quickstart - React Native',
           language: 'en',
           products: ['auth', 'transactions'] as Products[],
@@ -74,7 +76,7 @@ export async function createLinkToken(req: Request, res: Response, next: NextFun
           redirect_uri: process.env.PLAID_SANDBOX_REDIRECT_URI,
         }
       : {
-          user: { client_user_id: req.sessionID },
+          user: { client_user_id: userId },
           client_name: 'Due',
           language: 'en',
           products: ['auth', 'transactions'] as Products[],
@@ -100,8 +102,9 @@ export async function exchangePublicToken(req: Request, res: Response, next: Nex
   
   try {
     const { public_token, institutionId, institutionName } = req.body as ExchangeTokenRequest;
+    const userId = (req as AuthRequest).user.id;
     
-    const hasDuplicate = await checkDuplicateConnection(req.sessionID, institutionId);
+    const hasDuplicate = await checkDuplicateConnection(userId, institutionId);
     if (hasDuplicate) {
       logger.warn('Duplicate bank connection attempt', { 
         ...reqInfo, 
@@ -120,7 +123,7 @@ export async function exchangePublicToken(req: Request, res: Response, next: Nex
       item_id: string;
     }>;
 
-    const connection = await createBankConnection(req.sessionID, {
+    const connection = await createBankConnection(userId, {
       plaidAccessToken: exchangeResponse.data.access_token,
       plaidItemId: exchangeResponse.data.item_id,
       institutionId,
@@ -147,6 +150,19 @@ export async function exchangePublicToken(req: Request, res: Response, next: Nex
         details: error.response?.data?.error_message 
       });
     }
+    
+    // Handle database errors specifically
+    if (error instanceof Error && error.message.includes('uuid')) {
+      logger.error('Database UUID error during bank connection', {
+        ...reqInfo,
+        error: error.message
+      });
+      return res.status(500).json({
+        error: 'DATABASE_ERROR',
+        message: 'Failed to create bank connection'
+      });
+    }
+
     logger.error('Unexpected error during token exchange', { 
       ...reqInfo, 
       error 
@@ -173,7 +189,7 @@ export async function getBalance(req: Request, res: Response, next: NextFunction
 
 export async function getRecurringTransactions(req: Request, res: Response, next: NextFunction) {
   try {
-    const userId = req.sessionID;
+    const userId = (req as AuthRequest).user.id;
     const connections = await getUserBankConnections(userId);
     
     if (!connections.length) {
@@ -217,9 +233,11 @@ export async function getRecurringTransactions(req: Request, res: Response, next
     const validTransactions = allTransactions.filter(t => t !== null);
     
     if (!validTransactions.length) {
-      return res.status(400).json({ 
-        error: 'NO_VALID_TRANSACTIONS',
-        message: 'Could not fetch transactions from any connected bank' 
+      return res.json({
+        recurring_transactions: [{
+          inflow_streams: [],
+          outflow_streams: []
+        }]
       });
     }
 
@@ -232,20 +250,40 @@ export async function getRecurringTransactions(req: Request, res: Response, next
 }
 
 export async function getBankConnections(req: Request, res: Response, next: NextFunction) {
+  const reqInfo = extractRequestInfo(req);
+  logger.info('Fetching bank connections', { ...reqInfo });
+  
   try {
-    const connections = await getUserBankConnections(req.sessionID);
-    res.json({ connections });
+    const userId = (req as AuthRequest).user.id;
+    const connections = await getUserBankConnections(userId);
+    res.json({ connections: connections || [] });
   } catch (error) {
-    next(error);
+    if (error instanceof Error && error.message.includes('database')) {
+      logger.error('Database error fetching bank connections', { 
+        ...reqInfo, 
+        error: error.message 
+      });
+      return res.status(500).json({ 
+        error: 'DATABASE_ERROR',
+        message: 'Failed to fetch bank connections'
+      });
+    }
+    
+    logger.warn('Non-critical error fetching bank connections', { 
+      ...reqInfo, 
+      error: isPlaidError(error) ? error.response?.data?.error_message : error 
+    });
+    res.json({ connections: [] });
   }
 }
 
-export async function unlinkBankConnection(req: Request<{ id: string }, unknown, UnlinkBankRequest>, res: Response, next: NextFunction) {
+export async function unlinkBankConnection(req: Request, res: Response, next: NextFunction) {
   try {
+    const userId = (req as AuthRequest).user.id;
     const { id } = req.params;
-    const { reason } = req.body;
+    const { reason } = req.body as UnlinkBankRequest;
     
-    await unlinkBank(req.sessionID, id, reason);
+    await unlinkBank(userId, id, reason);
     res.json({ success: true });
   } catch (error) {
     next(error);

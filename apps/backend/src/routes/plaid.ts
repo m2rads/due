@@ -1,13 +1,13 @@
 import { Router } from 'express';
-import { 
-  createLinkToken, 
-  exchangePublicToken, 
-  getBalance, 
+import { authenticateUser } from '../middleware/auth';
+import {
+  createLinkToken,
+  exchangePublicToken,
   getRecurringTransactions,
   getBankConnections,
-  unlinkBankConnection
+  unlinkBankConnection,
+  getBalance
 } from '../controllers/plaid';
-import { authenticateUser } from '../middleware/auth';
 
 /**
  * @openapi
@@ -54,12 +54,17 @@ import { authenticateUser } from '../middleware/auth';
 
 const router = Router();
 
+// All Plaid routes require authentication
+router.use(authenticateUser);
+
 /**
  * @openapi
  * /api/plaid/create_link_token:
  *   post:
  *     summary: Create a Plaid Link token
  *     tags: [Plaid]
+ *     security:
+ *       - sessionAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -91,6 +96,8 @@ router.post('/create_link_token', createLinkToken);
  *   post:
  *     summary: Exchange public token for access token and create bank connection
  *     tags: [Plaid]
+ *     security:
+ *       - sessionAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -125,9 +132,6 @@ router.post('/create_link_token', createLinkToken);
  *         description: Invalid request or Plaid error
  */
 router.post('/exchange_public_token', exchangePublicToken);
-
-// Protected routes
-router.use(authenticateUser);
 
 /**
  * @openapi

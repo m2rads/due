@@ -94,7 +94,7 @@ app.use(
 
 // Routes
 app.use('/auth', authRouter);
-app.use('/api', plaidRouter);
+app.use('/api/plaid', plaidRouter);
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
