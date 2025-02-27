@@ -1,3 +1,4 @@
+/// <reference types="nativewind/types" />
 import React from 'react';
 import { View, Text, Modal, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { BankConnection } from '@due/types';

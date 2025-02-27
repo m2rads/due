@@ -1,3 +1,4 @@
+/// <reference types="nativewind/types" />
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { AlertTriangle, XCircle } from 'lucide-react-native';

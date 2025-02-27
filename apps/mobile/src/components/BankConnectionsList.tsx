@@ -1,3 +1,4 @@
+/// <reference types="nativewind/types" />
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, ScrollView, RefreshControl } from 'react-native';
 import { BankConnection } from '@due/types';
