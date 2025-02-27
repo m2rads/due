@@ -7,7 +7,9 @@ import {
   getUserBankConnections,
   updateBankConnection,
   unlinkBankConnection as unlinkBank,
-  checkDuplicateConnection 
+  checkDuplicateConnection,
+  findSoftDeletedConnection,
+  reactivateBankConnection
 } from '../db/queries/bank-connections';
 import { logger, extractRequestInfo } from '../utils/logger';
 import { AuthRequest } from '../types/auth';
@@ -104,6 +106,7 @@ export async function exchangePublicToken(req: Request, res: Response, next: Nex
     const { public_token, institutionId, institutionName } = req.body as ExchangeTokenRequest;
     const userId = (req as AuthRequest).user.id;
     
+    // First check if there's an active connection
     const hasDuplicate = await checkDuplicateConnection(userId, institutionId);
     if (hasDuplicate) {
       logger.warn('Duplicate bank connection attempt', { 
@@ -116,6 +119,7 @@ export async function exchangePublicToken(req: Request, res: Response, next: Nex
       });
     }
 
+    // Exchange the public token with Plaid
     const exchangeResponse = await withRetry(() => 
       plaidClient.itemPublicTokenExchange({ public_token })
     ) as PlaidResponse<{
@@ -123,18 +127,43 @@ export async function exchangePublicToken(req: Request, res: Response, next: Nex
       item_id: string;
     }>;
 
-    const connection = await createBankConnection(userId, {
-      plaidAccessToken: exchangeResponse.data.access_token,
-      plaidItemId: exchangeResponse.data.item_id,
-      institutionId,
-      institutionName
-    });
+    // Look for a soft-deleted connection for this institution
+    const softDeletedConnection = await findSoftDeletedConnection(userId, institutionId);
 
-    logger.info('Successfully created bank connection', { 
-      ...reqInfo, 
-      connectionId: connection.id,
-      institutionId 
-    });
+    let connection;
+    if (softDeletedConnection) {
+      // Reactivate the existing connection with the new access token
+      logger.info('Reactivating soft-deleted bank connection', { 
+        ...reqInfo, 
+        connectionId: softDeletedConnection.id,
+        institutionId 
+      });
+      
+      connection = await reactivateBankConnection(softDeletedConnection.id, {
+        plaidAccessToken: exchangeResponse.data.access_token,
+        plaidItemId: exchangeResponse.data.item_id
+      });
+      
+      logger.info('Successfully reactivated bank connection', { 
+        ...reqInfo, 
+        connectionId: connection.id,
+        institutionId 
+      });
+    } else {
+      // Create a new connection
+      connection = await createBankConnection(userId, {
+        plaidAccessToken: exchangeResponse.data.access_token,
+        plaidItemId: exchangeResponse.data.item_id,
+        institutionId,
+        institutionName
+      });
+      
+      logger.info('Successfully created bank connection', { 
+        ...reqInfo, 
+        connectionId: connection.id,
+        institutionId 
+      });
+    }
 
     req.session.access_token = exchangeResponse.data.access_token;
     res.json({ success: true, connection });
