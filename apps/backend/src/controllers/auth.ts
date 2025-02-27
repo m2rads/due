@@ -132,4 +132,33 @@ export async function getMe(req: Request, res: Response) {
     console.error('Get user error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+}
+
+export async function refreshToken(req: Request, res: Response) {
+  try {
+    const { refresh_token } = req.body;
+
+    if (!refresh_token) {
+      return res.status(400).json({ error: 'Refresh token is required' });
+    }
+
+    const { data, error } = await supabase.auth.refreshSession({
+      refresh_token
+    });
+
+    if (error || !data.session) {
+      return res.status(401).json({ error: error?.message || 'Failed to refresh token' });
+    }
+
+    res.json({
+      session: {
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+        expires_in: data.session.expires_in
+      }
+    });
+  } catch (error) {
+    console.error('Token refresh error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 } 

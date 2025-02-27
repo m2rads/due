@@ -1,3 +1,4 @@
+/// <reference types="nativewind/types" />
 import React, { Component, ErrorInfo } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useAuth } from '../context/AuthContext';

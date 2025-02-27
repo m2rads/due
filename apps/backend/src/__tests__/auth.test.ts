@@ -1,8 +1,19 @@
 import { Request, Response } from 'express';
 import { supabase } from '../config/supabase';
-import { SignUpBody, SignInBody } from '../types/auth';
-import { signUp, signIn, signOut, deleteUser } from '../controllers/auth';
+import { SignUpBody, SignInBody } from '@due/types';
+import { signUp, signIn, signOut, deleteUser, refreshToken } from '../controllers/auth';
 import { createProfile, getProfileById, deleteProfile } from '../db/queries/profiles';
+import { AuthRequest } from '../types/auth';
+
+// Mock console.error to prevent noise in test output
+const originalConsoleError = console.error;
+beforeAll(() => {
+  console.error = jest.fn();
+});
+
+afterAll(() => {
+  console.error = originalConsoleError;
+});
 
 // Mock Supabase
 jest.mock('../config/supabase', () => ({
@@ -14,7 +25,8 @@ jest.mock('../config/supabase', () => ({
       getUser: jest.fn(),
       admin: {
         deleteUser: jest.fn()
-      }
+      },
+      refreshSession: jest.fn()
     }
   }
 }));
@@ -27,7 +39,7 @@ jest.mock('../db/queries/profiles', () => ({
 }));
 
 describe('Authentication', () => {
-  let mockRequest: Partial<Request>;
+  let mockRequest: Partial<AuthRequest>;
   let mockResponse: Partial<Response>;
   let mockJson: jest.Mock;
   let mockStatus: jest.Mock;
@@ -35,7 +47,16 @@ describe('Authentication', () => {
   beforeEach(() => {
     mockJson = jest.fn();
     mockStatus = jest.fn().mockReturnThis();
-    mockRequest = {};
+    mockRequest = {
+      user: {
+        id: 'test-id',
+        email: 'test@example.com',
+        app_metadata: {},
+        user_metadata: {},
+        aud: 'authenticated',
+        created_at: '2024-01-01T00:00:00.000Z'
+      }
+    };
     mockResponse = {
       json: mockJson,
       status: mockStatus
@@ -204,17 +225,6 @@ describe('Authentication', () => {
 
   describe('Delete User', () => {
     it('should successfully delete a user', async () => {
-      // Mock getUser to return a valid user
-      (supabase.auth.getUser as jest.Mock).mockResolvedValue({
-        data: { 
-          user: { 
-            id: 'test-id',
-            email: 'test@example.com'
-          }
-        },
-        error: null
-      });
-
       // Mock deleteProfile to succeed
       (deleteProfile as jest.Mock).mockResolvedValue(undefined);
 
@@ -234,17 +244,6 @@ describe('Authentication', () => {
     });
 
     it('should handle profile deletion failure', async () => {
-      // Mock getUser to return a valid user
-      (supabase.auth.getUser as jest.Mock).mockResolvedValue({
-        data: { 
-          user: { 
-            id: 'test-id',
-            email: 'test@example.com'
-          }
-        },
-        error: null
-      });
-
       // Mock profile deletion to fail
       (deleteProfile as jest.Mock).mockRejectedValue(new Error('Failed to delete profile'));
 
@@ -257,11 +256,8 @@ describe('Authentication', () => {
     });
 
     it('should handle unauthenticated user', async () => {
-      // Mock getUser to return no user
-      (supabase.auth.getUser as jest.Mock).mockResolvedValue({
-        data: { user: null },
-        error: { message: 'Not authenticated' }
-      });
+      // Remove user from request to simulate unauthenticated state
+      mockRequest.user = undefined;
 
       await deleteUser(mockRequest as Request, mockResponse as Response);
 
@@ -270,17 +266,6 @@ describe('Authentication', () => {
     });
 
     it('should handle deletion failure', async () => {
-      // Mock getUser to return a valid user
-      (supabase.auth.getUser as jest.Mock).mockResolvedValue({
-        data: { 
-          user: { 
-            id: 'test-id',
-            email: 'test@example.com'
-          }
-        },
-        error: null
-      });
-
       // Mock profile deletion to succeed
       (deleteProfile as jest.Mock).mockResolvedValue(undefined);
 
@@ -296,6 +281,77 @@ describe('Authentication', () => {
       expect(supabase.auth.admin.deleteUser).toHaveBeenCalledWith('test-id');
       expect(mockStatus).toHaveBeenCalledWith(400);
       expect(mockJson).toHaveBeenCalledWith({ error: 'Failed to delete user' });
+    });
+  });
+
+  describe('Refresh Token', () => {
+    it('should successfully refresh tokens', async () => {
+      const mockSession = {
+        access_token: 'new-access-token',
+        refresh_token: 'new-refresh-token',
+        expires_in: 3600
+      };
+
+      (supabase.auth.refreshSession as jest.Mock).mockResolvedValue({
+        data: {
+          session: mockSession
+        },
+        error: null
+      });
+
+      mockRequest.body = {
+        refresh_token: 'valid-refresh-token'
+      };
+
+      await refreshToken(mockRequest as Request, mockResponse as Response);
+
+      expect(supabase.auth.refreshSession).toHaveBeenCalledWith({
+        refresh_token: 'valid-refresh-token'
+      });
+      expect(mockJson).toHaveBeenCalledWith({
+        session: mockSession
+      });
+    });
+
+    it('should handle missing refresh token', async () => {
+      mockRequest.body = {};
+
+      await refreshToken(mockRequest as Request, mockResponse as Response);
+
+      expect(mockStatus).toHaveBeenCalledWith(400);
+      expect(mockJson).toHaveBeenCalledWith({ error: 'Refresh token is required' });
+      expect(supabase.auth.refreshSession).not.toHaveBeenCalled();
+    });
+
+    it('should handle invalid refresh token', async () => {
+      (supabase.auth.refreshSession as jest.Mock).mockResolvedValue({
+        data: { session: null },
+        error: { message: 'Invalid refresh token' }
+      });
+
+      mockRequest.body = {
+        refresh_token: 'invalid-refresh-token'
+      };
+
+      await refreshToken(mockRequest as Request, mockResponse as Response);
+
+      expect(mockStatus).toHaveBeenCalledWith(401);
+      expect(mockJson).toHaveBeenCalledWith({ error: 'Invalid refresh token' });
+    });
+
+    it('should handle refresh failure', async () => {
+      const error = new Error('Unexpected error');
+      (supabase.auth.refreshSession as jest.Mock).mockRejectedValue(error);
+
+      mockRequest.body = {
+        refresh_token: 'valid-refresh-token'
+      };
+
+      await refreshToken(mockRequest as Request, mockResponse as Response);
+
+      expect(console.error).toHaveBeenCalledWith('Token refresh error:', error);
+      expect(mockStatus).toHaveBeenCalledWith(500);
+      expect(mockJson).toHaveBeenCalledWith({ error: 'Internal server error' });
     });
   });
 }); 

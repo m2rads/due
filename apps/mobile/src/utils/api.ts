@@ -43,8 +43,8 @@ api.interceptors.request.use(async (config) => {
       service: 'auth'
     });
     if (credentials) {
-      const { password: token } = credentials;
-      config.headers.Authorization = `Bearer ${token}`;
+      // Use username as access token
+      config.headers.Authorization = `Bearer ${credentials.username}`;
     }
   } catch (error) {
     console.error('Error getting token:', error);
@@ -67,6 +67,11 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // Don't retry auth endpoints to prevent loops
+    if (originalRequest.url?.includes('/auth/')) {
+      return Promise.reject(error);
+    }
+
     originalRequest._retry = true;
 
     if (isRefreshing) {
@@ -84,6 +89,7 @@ api.interceptors.response.use(
     isRefreshing = true;
 
     try {
+      console.log('Token expired, attempting refresh...');
       const credentials = await Keychain.getGenericPassword({
         service: 'auth'
       });
@@ -92,28 +98,34 @@ api.interceptors.response.use(
         throw new Error('No refresh token found');
       }
 
-      // Get current session
+      // Use refresh token (password) to get new tokens
       const response = await api.post<AuthResponse>('/auth/refresh', {
         refresh_token: credentials.password,
       });
 
-      const { access_token } = response.data.session!;
+      if (!response.data.session?.access_token || !response.data.session?.refresh_token) {
+        throw new Error('Invalid refresh response');
+      }
 
-      // Store new token
+      const { access_token, refresh_token } = response.data.session;
+      console.log('Token refresh successful');
+
+      // Store both new tokens
       await Keychain.setGenericPassword(
-        'auth_user',
         access_token,
+        refresh_token,
         {
           service: 'auth'
         }
       );
 
-      // Update authorization header
+      // Update authorization header with new access token
       originalRequest.headers.Authorization = `Bearer ${access_token}`;
       
       processQueue(null, access_token);
       return api(originalRequest);
     } catch (refreshError) {
+      console.error('Token refresh failed:', refreshError);
       processQueue(refreshError, null);
       // Clear stored credentials on refresh error
       await Keychain.resetGenericPassword({ service: 'auth' });
@@ -129,10 +141,11 @@ export const authAPI = {
   async signUp(data: SignUpBody): Promise<AuthResponse> {
     try {
       const response = await api.post<AuthResponse>('/auth/signup', data);
-      if (response.data.session?.access_token) {
+      if (response.data.session?.access_token && response.data.session?.refresh_token) {
+        // Store access token as username and refresh token as password
         await Keychain.setGenericPassword(
-          'auth_user',
           response.data.session.access_token,
+          response.data.session.refresh_token,
           {
             service: 'auth'
           }
@@ -150,10 +163,11 @@ export const authAPI = {
   async signIn(credentials: SignInBody): Promise<AuthResponse> {
     try {
       const response = await api.post<AuthResponse>('/auth/signin', credentials);
-      if (response.data.session?.access_token) {
+      if (response.data.session?.access_token && response.data.session?.refresh_token) {
+        // Store access token as username and refresh token as password
         await Keychain.setGenericPassword(
-          'auth_user',
           response.data.session.access_token,
+          response.data.session.refresh_token,
           {
             service: 'auth'
           }
@@ -200,15 +214,38 @@ export const authAPI = {
     }
   },
 
-  async getMe(): Promise<AuthResponse> {
+  async getMe(): Promise<AuthResponse | null> {
     try {
+      const credentials = await Keychain.getGenericPassword({
+        service: 'auth'
+      });
+
+      if (!credentials) {
+        // No credentials is a normal state, not an error
+        return null;
+      }
+
       const response = await api.get<AuthResponse>('/auth/me');
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.error || 'Failed to get user data');
+        if (error.response?.status === 401) {
+          // Token expired/invalid is a normal state, just clear and return null
+          await this.clearAuthState();
+          return null;
+        }
+        
+        // Only log non-auth errors as they might indicate actual issues
+        if (error.response?.status !== 401) {
+          console.error('Unexpected API error during auth check:', {
+            status: error.response?.status,
+            data: error.response?.data
+          });
+        }
+      } else {
+        console.error('Unexpected error during auth check:', error);
       }
-      throw error;
+      return null;
     }
   },
 };

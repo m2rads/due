@@ -25,8 +25,44 @@ export type AuthStackParamList = {
   ForgotPassword: undefined;
 };
 
-export type MainStackParamList = {
+// Tabs
+export type CalendarTabParamList = {
+  Calendar: { 
+    transactions?: any; 
+    freshlyLinked?: boolean;
+    unlinked?: boolean;
+    timestamp?: number;
+  };
+  DayDetail: { date: string; transactions: any[] };
+};
+
+export type AccountsTabParamList = {
   AddAccount: undefined;
-  Calendar: { transactions: any }; // TODO: Add proper type from your transactions
-  DayDetail: { date: string; transactions: any[] }; // TODO: Add proper type from your transactions
+};
+
+// Main tabs navigator
+export type MainTabsParamList = {
+  Calendar: undefined;
+  AccountsTab: undefined;
+  SettingsTab: undefined;
+};
+
+// Main navigator that contains both tabs and direct screens
+export type MainStackParamList = {
+  // Main tab container
+  Main: undefined;
+  
+  // Tabs
+  Calendar: { 
+    transactions?: any; 
+    freshlyLinked?: boolean;
+    unlinked?: boolean;
+    timestamp?: number;
+  };
+  AccountsTab: undefined;
+  SettingsTab: undefined;
+  
+  // Direct screens
+  DayDetail: { date: string; transactions: any[] };
+  AddAccount: undefined;
 };
