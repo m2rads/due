@@ -146,6 +146,13 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     alignItems: 'center',
   },
+  addAnotherButtonContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#F0FFF0',
+    borderTopWidth: 1,
+    borderTopColor: '#B0D2B0',
+  },
 });
 
 // Simple 90s window close button
@@ -518,13 +525,32 @@ const AddAccountScreen = ({ navigation }: any) => {
   return (
     <View style={styles.container}>
       {connections.length > 0 ? (
-        <BankConnectionsList
-          connections={connections}
-          isRefreshing={connectionState.isLoading}
-          onRefresh={loadConnections}
-          onReconnect={handleReconnect}
-          onUnlink={handleUnlink}
-        />
+        <>
+          <BankConnectionsList
+            connections={connections}
+            isRefreshing={connectionState.isLoading}
+            onRefresh={loadConnections}
+            onReconnect={handleReconnect}
+            onUnlink={handleUnlink}
+          />
+          
+          {/* Add button to connect another account */}
+          <View style={styles.addAnotherButtonContainer}>
+            <TouchableOpacity
+              onPress={handleOpenLink}
+              disabled={connectionState.isConnecting}
+              style={connectionState.isConnecting ? styles.disabledButton : styles.connectButton}
+            >
+              {connectionState.isConnecting ? (
+                <ActivityIndicator color="#000000" />
+              ) : (
+                <Text style={styles.connectButtonText}>
+                  Connect Another Account
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </>
       ) : (
         <View style={styles.windowContainer}>
           <WindowHeader title="Connect Bank Account" />

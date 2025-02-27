@@ -1,5 +1,5 @@
 /// <reference types="nativewind/types" />
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -48,6 +48,8 @@ interface TransactionStream {
   predicted_next_date: string;
   is_active: boolean;
   status: string;
+  institutionId?: string;
+  institutionName?: string;
 }
 
 interface RecurringTransactions {
@@ -233,12 +235,28 @@ const CalendarView = () => {
         return;
       }
       
-      const data = response[0];
+      // Combine transactions from all bank accounts instead of just the first one
+      const combinedData: RecurringTransactions = {
+        inflow_streams: [],
+        outflow_streams: []
+      };
+      
+      // Merge all transaction data from all bank connections
+      response.forEach((accountData: RecurringTransactions) => {
+        if (accountData?.inflow_streams?.length) {
+          combinedData.inflow_streams.push(...accountData.inflow_streams);
+        }
+        if (accountData?.outflow_streams?.length) {
+          combinedData.outflow_streams.push(...accountData.outflow_streams);
+        }
+      });
+      
       console.log('[CalendarView] Loaded transactions successfully',
-        `${data?.inflow_streams?.length || 0} inflows, ${data?.outflow_streams?.length || 0} outflows`);
+        `${combinedData.inflow_streams.length} inflows, ${combinedData.outflow_streams.length} outflows`,
+        `from ${response.length} bank connections`);
       
       setTransactions({
-        data,
+        data: combinedData,
         isLoading: false,
         error: null
       });
@@ -463,6 +481,7 @@ const CalendarView = () => {
     const inflows = transactions.data.inflow_streams || [];
     const outflows = transactions.data.outflow_streams || [];
     
+    // No need to manually map institution names anymore since the backend adds this info
     const allTransactions = [
       ...inflows.map(t => ({ ...t, type: 'inflow' as const })),
       ...outflows.map(t => ({ ...t, type: 'outflow' as const }))
@@ -498,6 +517,18 @@ const CalendarView = () => {
   const handleDayPress = (day: Date) => {
     const dayTransactions = getTransactionsForDay(day);
     if (dayTransactions.length > 0) {
+      // Count the number of unique banks
+      const uniqueBanks = dayTransactions.reduce((banks, tx) => {
+        const bankName = tx.institutionName || 'Unknown Bank';
+        banks[bankName] = true;
+        return banks;
+      }, {} as Record<string, boolean>);
+      
+      const uniqueBankCount = Object.keys(uniqueBanks).length;
+      const uniqueBankNames = Object.keys(uniqueBanks).join(', ');
+      
+      console.log(`[CalendarView] Navigating to DayDetail with ${dayTransactions.length} transactions from ${uniqueBankCount} banks (${uniqueBankNames})`);
+      
       navigation.navigate('DayDetail', {
         date: day.toISOString(),
         transactions: dayTransactions
