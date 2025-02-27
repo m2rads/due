@@ -213,7 +213,28 @@ export async function getRecurringTransactions(req: Request, res: Response, next
             account_ids
           });
           
-          return recurringResponse.data;
+          // Add institutionId and institutionName to each transaction stream
+          const data = recurringResponse.data;
+          
+          // Add connection info to each inflow stream
+          if (data.inflow_streams && Array.isArray(data.inflow_streams)) {
+            data.inflow_streams = data.inflow_streams.map(stream => ({
+              ...stream,
+              institutionId: connection.id,
+              institutionName: connection.institutionName
+            }));
+          }
+          
+          // Add connection info to each outflow stream
+          if (data.outflow_streams && Array.isArray(data.outflow_streams)) {
+            data.outflow_streams = data.outflow_streams.map(stream => ({
+              ...stream,
+              institutionId: connection.id,
+              institutionName: connection.institutionName
+            }));
+          }
+          
+          return data;
         } catch (error) {
           // Update connection status if there's an error
           if (error instanceof Error && 'response' in error) {
