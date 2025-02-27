@@ -16,14 +16,14 @@ import SignInScreen from './screens/auth/SignInScreen';
 import SignUpScreen from './screens/auth/SignUpScreen';
 import ForgotPasswordScreen from './screens/auth/ForgotPassword';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { AuthStackParamList, MainStackParamList } from './types/auth';
+import { AuthStackParamList, MainStackParamList, MainTabsParamList } from './types/auth';
 import ErrorBoundaryWrapper from './components/ErrorBoundary';
 import LoadingScreen from './components/LoadingScreen';
 
 const Stack = createNativeStackNavigator();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const MainStack = createNativeStackNavigator<MainStackParamList>();
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<MainTabsParamList>();
 
 const PlaidTheme = {
   dark: false,
@@ -107,27 +107,6 @@ const AuthNavigator = () => (
   </AuthStack.Navigator>
 );
 
-const CalendarStack = () => (
-  <MainStack.Navigator
-    screenOptions={screenOptions}
-  >
-    <MainStack.Screen
-      name="Calendar"
-      component={CalendarView}
-      options={{
-        title: 'Payment Calendar'
-      }}
-    />
-    <MainStack.Screen
-      name="DayDetail"
-      component={DayDetailView}
-      options={{
-        title: 'Daily Transactions'
-      }}
-    />
-  </MainStack.Navigator>
-);
-
 const MainNavigator = () => (
   <Tab.Navigator
     screenOptions={({ route }) => ({
@@ -137,7 +116,7 @@ const MainNavigator = () => (
       },
       headerTintColor: '#fff',
       tabBarIcon: ({ color, size }) => {
-        if (route.name === 'CalendarTab') {
+        if (route.name === 'Calendar') {
           return (
             <View className="items-center">
               <Calendar size={24} color={color} />
@@ -145,7 +124,7 @@ const MainNavigator = () => (
             </View>
           );
         }
-        if (route.name === 'AddAccountTab') {
+        if (route.name === 'AccountsTab') {
           return (
             <View className="items-center">
               <PlusCircle size={24} color={color} />
@@ -164,15 +143,14 @@ const MainNavigator = () => (
     })}
   >
     <Tab.Screen
-      name="CalendarTab"
-      component={CalendarStack}
+      name="Calendar"
+      component={CalendarView}
       options={{
-        headerShown: false,
         title: 'Calendar',
       }}
     />
     <Tab.Screen
-      name="AddAccountTab"
+      name="AccountsTab"
       component={AddAccountScreen}
       options={{
         title: 'Add Account',
@@ -198,7 +176,31 @@ const Navigation = () => {
   return (
     <NavigationContainer theme={PlaidTheme}>
       <StatusBar barStyle="light-content" backgroundColor="#000000" />
-      {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
+      {isAuthenticated ? (
+        <MainStack.Navigator screenOptions={screenOptions}>
+          <MainStack.Screen
+            name="Main"
+            component={MainNavigator}
+            options={{ headerShown: false }}
+          />
+          <MainStack.Screen
+            name="DayDetail"
+            component={DayDetailView}
+            options={{
+              title: 'Daily Transactions'
+            }}
+          />
+          <MainStack.Screen
+            name="AddAccount"
+            component={AddAccountScreen}
+            options={{
+              title: 'Add Account'
+            }}
+          />
+        </MainStack.Navigator>
+      ) : (
+        <AuthNavigator />
+      )}
     </NavigationContainer>
   );
 };

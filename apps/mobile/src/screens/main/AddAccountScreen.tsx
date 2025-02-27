@@ -364,12 +364,9 @@ const AddAccountScreen = ({ navigation }: any) => {
             // Let the Calendar component handle that to avoid race conditions
             // Add a small delay to ensure all state updates have completed
             setTimeout(() => {
-              navigation.navigate('CalendarTab', { 
-                screen: 'Calendar',
-                params: {
-                  freshlyLinked: true,
-                  timestamp: Date.now() // Force refresh even if navigating to the same screen
-                }
+              navigation.navigate('Calendar', {
+                freshlyLinked: true,
+                timestamp: Date.now() // Force refresh even if navigating to the same screen
               });
             }, 300);
           } catch (error: any) {
@@ -458,29 +455,35 @@ const AddAccountScreen = ({ navigation }: any) => {
       // will reflect the removal immediately
       setConnections(prev => prev.filter(c => c.id !== connection.id));
       
+      // Show toast to indicate operation is in progress
+      Toast.show({
+        type: 'info',
+        text1: 'Unlinking Bank',
+        text2: `Unlinking ${connection.institutionName}...`
+      });
+      
       // Then make the API call
       await plaidService.unlinkBankConnection(connection.id, 'user_requested');
       
       // Make sure to properly invalidate transaction cache
       plaidService.invalidateTransactionCache();
       
+      // Show success toast after unlink completes
       Toast.show({
         type: 'success',
         text1: 'Bank Unlinked',
         text2: `Successfully unlinked ${connection.institutionName}`
       });
       
-      // Store reference to timeout so component unmount can clear it
+      // Add longer delay to ensure backend processes the unlink fully before navigation
+      // This helps prevent the 400 error when fetching transactions
       const navigationTimeoutRef = setTimeout(() => {
         // Navigate to Calendar with unlinked flag to trigger refresh
-        navigation.navigate('CalendarTab', {
-          screen: 'Calendar',
-          params: {
-            unlinked: true,
-            timestamp: Date.now() // Force refresh
-          }
+        navigation.navigate('Calendar', {
+          unlinked: true,
+          timestamp: Date.now() // Force refresh
         });
-      }, 500); // Increased delay to allow backend to process unlink fully
+      }, 2000); // Increased delay significantly to allow backend to process unlink
       
       // Clean up timeout if component unmounts
       return () => clearTimeout(navigationTimeoutRef);

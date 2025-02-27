@@ -25,7 +25,7 @@ import {
 import { ChevronLeft, ChevronRight, Calendar, PlusCircle } from 'lucide-react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { MainTabsParamList, CalendarTabParamList } from '../../types/auth';
+import { MainStackParamList } from '../../types/auth';
 import { plaidService } from '../../services/plaidService';
 import { useBankConnections } from '../../hooks/useBankConnections';
 import ConnectionStatusBanner from '../../components/ConnectionStatusBanner';
@@ -68,10 +68,7 @@ interface RouteParams {
   timestamp?: number;
 }
 
-type NavigationProp = NativeStackNavigationProp<
-  MainTabsParamList,
-  'CalendarTab' | 'AccountsTab'
->;
+type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CONTAINER_WIDTH = SCREEN_WIDTH - 32; // Container width with padding
@@ -314,26 +311,39 @@ const CalendarView = () => {
           });
         } else if (params.freshlyLinked || params.unlinked) {
           if (params.unlinked) {
-            console.log('[CalendarView] Account unlinked, checking for active connections');
-            // First verify if we have any active connections left
-            refreshConnections().then(() => {
-              // Check after refreshing connection list
-              if (!hasActiveConnections()) {
-                console.log('[CalendarView] No active connections after unlinking, showing empty state');
-                setTransactions({
-                  data: { inflow_streams: [], outflow_streams: [] },
-                  isLoading: false,
-                  error: null
-                });
-              } else {
-                // If we still have active connections, load transactions after a delay
-                console.log('[CalendarView] Still have active connections after unlinking, loading transactions');
-                const timeoutId = setTimeout(() => {
-                  loadTransactions(true);
-                }, 500);
-                timeoutRefs.push(timeoutId);
-              }
+            console.log('[CalendarView] Account unlinked, setting empty state initially');
+            // IMMEDIATELY set empty state to prevent error flash
+            setTransactions({
+              data: { inflow_streams: [], outflow_streams: [] },
+              isLoading: false,
+              error: null
             });
+            
+            // Then, with a longer delay, check connections and maybe reload
+            const timeoutId = setTimeout(() => {
+              console.log('[CalendarView] Checking connections after unlink delay');
+              refreshConnections().then(() => {
+                // Only try loading transactions if we definitely have active connections
+                if (hasActiveConnections()) {
+                  console.log('[CalendarView] Still have active connections after unlinking, loading transactions');
+                  // Add another delay before loading transactions to ensure backend is ready
+                  const loadTimeoutId = setTimeout(() => {
+                    loadTransactions(true).catch(error => {
+                      // Silently handle any errors - we already have empty state as fallback
+                      console.log('[CalendarView] Ignoring post-unlink transaction load error:', error);
+                    });
+                  }, 1000);
+                  timeoutRefs.push(loadTimeoutId);
+                } else {
+                  console.log('[CalendarView] No active connections after unlinking, keeping empty state');
+                }
+              }).catch(error => {
+                // Also silently handle connection refresh errors
+                console.log('[CalendarView] Ignoring post-unlink connection refresh error:', error);
+              });
+            }, 1500); // Increased delay after unlinking
+            
+            timeoutRefs.push(timeoutId);
           } else if (params.freshlyLinked) {
             console.log('[CalendarView] Freshly linked account detected, loading with longer delay');
             
@@ -416,21 +426,10 @@ const CalendarView = () => {
     setSelectedConnection(connection);
   };
 
-  const handleReconnectConfirm = async () => {
-    try {
-      setIsReconnecting(true);
-      setSelectedConnection(null);
-      
-      // Navigate to add account
-      navigation.navigate('AccountsTab', { 
-        screen: 'AddAccount',
-        params: undefined
-      });
-    } catch (error) {
-      console.error('[CalendarView] Error in reconnect flow:', error);
-    } finally {
-      setIsReconnecting(false);
-    }
+  const handleReconnectConfirm = () => {
+    setIsReconnecting(false);
+    // Navigate to the AddAccount screen
+    navigation.navigate('AddAccount');
   };
 
   const erroredConnections = getErroredConnections();
@@ -440,7 +439,25 @@ const CalendarView = () => {
     end: endOfMonth(currentDate),
   });
 
-  const getTransactionsForDay = (day: Date): (TransactionStream & { type: 'inflow' | 'outflow' })[] => {
+  // Add the function after the component useMemo hooks but before the handlers
+  const getDayTransactions = (day: Date, monthTransactions: RecurringTransactions) => {
+    const formattedDay = format(day, 'yyyy-MM-dd');
+    
+    const inflows = monthTransactions.inflow_streams || [];
+    const outflows = monthTransactions.outflow_streams || [];
+    
+    const allTransactions = [
+      ...inflows.map(t => ({ ...t, type: 'inflow' as const })),
+      ...outflows.map(t => ({ ...t, type: 'outflow' as const }))
+    ];
+    
+    return allTransactions.filter(transaction => {
+      const transactionDate = parseISO(transaction.predicted_next_date);
+      return format(transactionDate, 'yyyy-MM-dd') === formattedDay;
+    });
+  };
+
+  const getTransactionsForDay = (day: Date) => {
     if (!transactions.data) return [];
     
     const inflows = transactions.data.inflow_streams || [];
@@ -478,14 +495,12 @@ const CalendarView = () => {
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
 
-  const handleDayPress = (day: Date, dayTransactions: (TransactionStream & { type: 'inflow' | 'outflow' })[]) => {
+  const handleDayPress = (day: Date) => {
+    const dayTransactions = getTransactionsForDay(day);
     if (dayTransactions.length > 0) {
-      navigation.navigate('CalendarTab', {
-        screen: 'DayDetail',
-        params: {
-          date: day.toISOString(),
-          transactions: dayTransactions
-        }
+      navigation.navigate('DayDetail', {
+        date: day.toISOString(),
+        transactions: dayTransactions
       });
     }
   };
@@ -570,7 +585,7 @@ const CalendarView = () => {
                   styles.dayCell,
                   isToday && styles.selectedDay,
                 ]}
-                onPress={() => handleDayPress(day, dayTransactions)}
+                onPress={() => handleDayPress(day)}
                 disabled={dayTransactions.length === 0}
               >
                 <Text style={styles.dayText}>

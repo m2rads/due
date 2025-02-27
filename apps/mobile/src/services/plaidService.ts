@@ -232,9 +232,7 @@ export const plaidService = {
                   console.log('[plaidService] Error accessing error details:', logError);
                 }
                 
-                console.log(`[plaidService] Retry attempt ${retryAttempt} failed:`, errorStatus);
-                
-                // Check if it's a 400 error in a safe way
+                // Is this a 400 error (likely no active connections)?
                 let is400Error = false;
                 try {
                   is400Error = error.response && error.response.status === 400;
@@ -242,11 +240,23 @@ export const plaidService = {
                   console.log('[plaidService] Error checking status code:', checkError);
                 }
                 
-                // Only continue retrying for 400 errors
-                if (!is400Error) {
-                  break;
+                // Stop retrying immediately for 400 errors and resolve with empty data
+                if (is400Error) {
+                  console.log('[plaidService] Got 400 error (no active connections), returning empty data');
+                  const defaultData = [{ inflow_streams: [], outflow_streams: [] }];
+                  
+                  // Reset the freshly linked flag
+                  transactionCache.freshlyLinked = false;
+                  
+                  // Cache empty data with normal TTL
+                  transactionCache.data = defaultData;
+                  transactionCache.timestamp = Date.now();
+                  
+                  resolve(defaultData);
+                  return;
                 }
                 
+                console.log(`[plaidService] Retry attempt ${retryAttempt} failed:`, errorStatus);
                 retryAttempt++;
               }
             }
@@ -285,46 +295,78 @@ export const plaidService = {
             }
           } else {
             // Normal non-retry request path
-            const response = await api.post('/api/plaid/recurring_transactions');
-            
-            if (!response.data?.recurring_transactions) {
-              console.warn('Recurring transactions response missing data:', response.data);
-              const defaultData = [{ inflow_streams: [], outflow_streams: [] }];
+            try {
+              const response = await api.post('/api/plaid/recurring_transactions');
               
-              // Cache the default response
-              transactionCache.data = defaultData;
+              if (!response.data?.recurring_transactions) {
+                console.warn('Recurring transactions response missing data:', response.data);
+                const defaultData = [{ inflow_streams: [], outflow_streams: [] }];
+                
+                // Cache the default response
+                transactionCache.data = defaultData;
+                transactionCache.timestamp = Date.now();
+                
+                resolve(defaultData);
+                return;
+              }
+              
+              // Cache the successful response
+              transactionCache.data = response.data.recurring_transactions;
               transactionCache.timestamp = Date.now();
               
-              resolve(defaultData);
+              resolve(response.data.recurring_transactions);
               return;
+            } catch (error) {
+              // Handle 400 errors (no active connections) gracefully and quietly
+              let is400Error = false;
+              try {
+                is400Error = error.response?.status === 400;
+              } catch (e) {
+                // Ignore error checking errors
+              }
+              
+              if (is400Error) {
+                console.log('[plaidService] 400 error in main path - no active connections');
+                const defaultData = [{ inflow_streams: [], outflow_streams: [] }];
+                
+                // Cache the default response with full TTL - this is an expected state
+                transactionCache.data = defaultData;
+                transactionCache.timestamp = Date.now();
+                
+                resolve(defaultData);
+                return;
+              }
+              
+              // Re-throw other errors
+              throw error;
             }
-            
-            // Cache the successful response
-            transactionCache.data = response.data.recurring_transactions;
-            transactionCache.timestamp = Date.now();
-            
-            resolve(response.data.recurring_transactions);
-            return;
           }
         } catch (error) {
-          console.error('Error getting recurring transactions:', error);
-          
           // Handle 400 errors gracefully - often happens when no connections exist
           // or right after unlinking a connection
-          if (error.response?.status === 400) {
+          let is400Error = false;
+          try {
+            is400Error = error.response?.status === 400;
+          } catch (e) {
+            // Ignore error checking errors
+          }
+          
+          if (is400Error) {
             console.log('[plaidService] Received 400 error - likely no active connections');
             const defaultData = [{ inflow_streams: [], outflow_streams: [] }];
             
             // Reset the freshly linked flag
             transactionCache.freshlyLinked = false;
             
-            // Still cache this default response but with shorter TTL
+            // Cache this default response with full TTL
             transactionCache.data = defaultData;
-            transactionCache.timestamp = now - (CACHE_TTL / 2); // Half the normal cache time
+            transactionCache.timestamp = Date.now(); // Use full TTL for expected states
             
             resolve(defaultData);
             return;
           }
+          
+          console.error('Error getting recurring transactions:', error);
           
           // On other errors, we still want to keep the old cache data if available
           if (transactionCache.data) {

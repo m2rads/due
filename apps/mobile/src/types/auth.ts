@@ -42,11 +42,27 @@ export type AccountsTabParamList = {
 
 // Main tabs navigator
 export type MainTabsParamList = {
-  CalendarTab: undefined | { screen: keyof CalendarTabParamList; params: any };
-  AccountsTab: undefined | { screen: keyof AccountsTabParamList; params: any };
+  Calendar: undefined;
+  AccountsTab: undefined;
+  SettingsTab: undefined;
 };
 
-// Main navigator that contains the tabs
-export type MainStackParamList = MainTabsParamList & {
-  // Any screens that are directly on the main stack, not in tabs
+// Main navigator that contains both tabs and direct screens
+export type MainStackParamList = {
+  // Main tab container
+  Main: undefined;
+  
+  // Tabs
+  Calendar: { 
+    transactions?: any; 
+    freshlyLinked?: boolean;
+    unlinked?: boolean;
+    timestamp?: number;
+  };
+  AccountsTab: undefined;
+  SettingsTab: undefined;
+  
+  // Direct screens
+  DayDetail: { date: string; transactions: any[] };
+  AddAccount: undefined;
 };
