@@ -9,6 +9,7 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
+  FlatList,
 } from 'react-native';
 import {
   format,
@@ -21,8 +22,13 @@ import {
   parseISO,
   lastDayOfMonth,
   getDay,
+  addDays,
+  isToday,
+  isSameMonth,
+  isAfter,
+  isBefore,
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Calendar, PlusCircle } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Calendar, PlusCircle, ArrowUpRight, ArrowDownRight } from 'lucide-react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../types/auth';
@@ -70,6 +76,10 @@ interface RouteParams {
   timestamp?: number;
 }
 
+interface TransactionWithType extends TransactionStream {
+  type: 'inflow' | 'outflow';
+}
+
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -84,16 +94,20 @@ const RETRY_DELAY = 1000;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F7F3', // Warm paper-like background
+    backgroundColor: '#FFFFFF',
   },
   calendarContainer: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    borderRadius: 12,
     margin: 16,
     padding: 16,
-    borderWidth: 2,
-    borderColor: '#000000',
-    borderStyle: 'solid',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   monthHeader: {
     flexDirection: 'row',
@@ -102,8 +116,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   monthText: {
-    fontSize: 24,
-    fontWeight: '500',
+    fontSize: 20,
+    fontWeight: '600',
     color: '#000000',
   },
   weekdayHeader: {
@@ -112,8 +126,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   weekdayText: {
-    fontSize: 14,
-    color: '#666666',
+    fontSize: 12,
+    color: '#777777',
+    fontWeight: '500',
   },
   dayCell: {
     width: DAY_WIDTH,
@@ -121,25 +136,164 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     margin: 2,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
     borderRadius: 8,
   },
   selectedDay: {
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#F5F5F5',
+  },
+  highlightedDay: {
+    borderWidth: 1,
     borderColor: '#000000',
-    borderWidth: 2,
   },
-  dayText: {
-    fontSize: 16,
-    color: '#000000',
-  },
-  transactionDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  todayDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
     backgroundColor: '#000000',
     marginTop: 2,
+  },
+  dayText: {
+    fontSize: 14,
+    color: '#000000',
+  },
+  dayTextMuted: {
+    color: '#BBBBBB',
+  },
+  transactionDotsContainer: {
+    flexDirection: 'row',
+    marginTop: 4,
+    height: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  transactionDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginHorizontal: 1,
+  },
+  inflowDot: {
+    backgroundColor: '#333333',
+  },
+  outflowDot: {
+    backgroundColor: '#555555',
+  },
+  previewContainer: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    marginBottom: 16,
+  },
+  previewHeader: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  previewHeaderText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+  },
+  previewContent: {
+    maxHeight: 300,
+  },
+  emptyPreview: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  emptyPreviewText: {
+    color: '#999999',
+    fontSize: 14,
+  },
+  transactionItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  transactionItemLeft: {
+    flex: 1,
+  },
+  transactionDate: {
+    fontSize: 12,
+    color: '#999999',
+    marginBottom: 4,
+  },
+  transactionTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#000000',
+    marginBottom: 2,
+  },
+  transactionFrequency: {
+    fontSize: 12,
+    color: '#777777',
+  },
+  transactionAmount: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'right',
+  },
+  inflowAmount: {
+    color: '#333333',
+  },
+  outflowAmount: {
+    color: '#555555',
+  },
+  transactionIcon: {
+    marginRight: 8,
+  },
+  seeAllButton: {
+    padding: 12,
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+  },
+  seeAllText: {
+    color: '#000000',
+    fontWeight: '500',
+  },
+  loadingContainer: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  refreshButton: {
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    marginBottom: 16,
+    alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  refreshButtonText: {
+    color: '#000000',
+    fontWeight: '500',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
   },
 });
 
@@ -175,6 +329,7 @@ const CalendarView = () => {
   const [selectedConnection, setSelectedConnection] = useState<BankConnection | null>(null);
   const [isReconnecting, setIsReconnecting] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const today = new Date();
   const [isLoading, setIsLoading] = useState(false);
   
@@ -452,36 +607,42 @@ const CalendarView = () => {
 
   const erroredConnections = getErroredConnections();
   
-  const days = eachDayOfInterval({
-    start: startOfMonth(currentDate),
-    end: endOfMonth(currentDate),
-  });
-
-  // Add the function after the component useMemo hooks but before the handlers
-  const getDayTransactions = (day: Date, monthTransactions: RecurringTransactions) => {
-    const formattedDay = format(day, 'yyyy-MM-dd');
-    
-    const inflows = monthTransactions.inflow_streams || [];
-    const outflows = monthTransactions.outflow_streams || [];
-    
-    const allTransactions = [
-      ...inflows.map(t => ({ ...t, type: 'inflow' as const })),
-      ...outflows.map(t => ({ ...t, type: 'outflow' as const }))
-    ];
-    
-    return allTransactions.filter(transaction => {
-      const transactionDate = parseISO(transaction.predicted_next_date);
-      return format(transactionDate, 'yyyy-MM-dd') === formattedDay;
+  // Get the days for the calendar
+  const days = useMemo(() => {
+    // Get all days in the current month
+    const daysInMonth = eachDayOfInterval({
+      start: startOfMonth(currentDate),
+      end: endOfMonth(currentDate),
     });
-  };
+    
+    // Add days from previous month to fill the first week
+    const firstDay = startOfMonth(currentDate);
+    const firstDayOfWeek = getDay(firstDay);
+    
+    const previousMonthDays = [];
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      previousMonthDays.unshift(addDays(firstDay, -i - 1));
+    }
+    
+    // Add days from next month to fill the last week
+    const lastDay = endOfMonth(currentDate);
+    const lastDayOfWeek = getDay(lastDay);
+    
+    const nextMonthDays = [];
+    for (let i = 1; i < 7 - lastDayOfWeek; i++) {
+      nextMonthDays.push(addDays(lastDay, i));
+    }
+    
+    return [...previousMonthDays.reverse(), ...daysInMonth, ...nextMonthDays];
+  }, [currentDate]);
 
-  const getTransactionsForDay = (day: Date) => {
+  // Get transactions for a specific day
+  const getTransactionsForDay = useCallback((day: Date) => {
     if (!transactions.data) return [];
     
     const inflows = transactions.data.inflow_streams || [];
     const outflows = transactions.data.outflow_streams || [];
     
-    // No need to manually map institution names anymore since the backend adds this info
     const allTransactions = [
       ...inflows.map(t => ({ ...t, type: 'inflow' as const })),
       ...outflows.map(t => ({ ...t, type: 'outflow' as const }))
@@ -509,12 +670,63 @@ const CalendarView = () => {
         return false;
       }
     });
-  };
+  }, [transactions.data]);
+
+  // Get transactions for the selected day
+  const selectedDayTransactions = useMemo(() => {
+    return getTransactionsForDay(selectedDate);
+  }, [selectedDate, getTransactionsForDay]);
+
+  // Get upcoming transactions for the preview panel (next 7 days)
+  const upcomingTransactions = useMemo(() => {
+    if (!transactions.data) return [];
+    
+    const inflows = transactions.data.inflow_streams || [];
+    const outflows = transactions.data.outflow_streams || [];
+    
+    const allTransactions = [
+      ...inflows.map(t => ({ ...t, type: 'inflow' as const })),
+      ...outflows.map(t => ({ ...t, type: 'outflow' as const }))
+    ];
+
+    // Filter and sort transactions by date
+    const upcoming = allTransactions
+      .filter(transaction => {
+        try {
+          if (!transaction.predicted_next_date) return false;
+          
+          const predictedDate = parseISO(transaction.predicted_next_date);
+          if (isNaN(predictedDate.getTime())) return false;
+          
+          // Check if the date is today or in the future
+          return !isBefore(predictedDate, startOfMonth(currentDate));
+        } catch (e) {
+          return false;
+        }
+      })
+      .sort((a, b) => {
+        const dateA = parseISO(a.predicted_next_date);
+        const dateB = parseISO(b.predicted_next_date);
+        return dateA.getTime() - dateB.getTime();
+      });
+    
+    return upcoming;
+  }, [transactions.data, currentDate]);
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
 
   const handleDayPress = (day: Date) => {
+    setSelectedDate(day);
+    
+    const dayTransactions = getTransactionsForDay(day);
+    if (dayTransactions.length > 0) {
+      // We don't navigate away anymore, just update the preview panel
+      console.log(`[CalendarView] Selected date with ${dayTransactions.length} transactions`);
+    }
+  };
+
+  const handleViewAllTransactions = (day: Date) => {
     const dayTransactions = getTransactionsForDay(day);
     if (dayTransactions.length > 0) {
       // Count the number of unique banks
@@ -536,122 +748,241 @@ const CalendarView = () => {
     }
   };
 
-  // Calculate first day offset
-  const firstDayOffset = getDay(startOfMonth(currentDate));
+  // Format amount as currency
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
-  // Loading view for transactions loading
-  const LoadingView = useCallback(() => {
-    if (!transactions.isLoading) {
-      return null;
-    }
+  // Render transaction item for the preview panel
+  const renderTransactionItem = ({ item }: { item: TransactionWithType }) => {
+    const transactionDate = parseISO(item.predicted_next_date);
     
     return (
-      <View 
-        style={{
-          position: 'absolute',
-          top: 8,
-          left: 0,
-          right: 0,
-          backgroundColor: 'transparent',
-          alignItems: 'center',
-          zIndex: 10
-        }}
+      <TouchableOpacity
+        style={styles.transactionItem}
+        onPress={() => handleViewAllTransactions(transactionDate)}
       >
-        <Text style={{ fontSize: 12, color: '#888888' }}>Loading transactions...</Text>
+        <View style={styles.transactionItemLeft}>
+          <Text style={styles.transactionDate}>
+            {format(transactionDate, 'MMM d, yyyy')}
+          </Text>
+          <Text style={styles.transactionTitle}>
+            {item.merchant_name || item.description}
+          </Text>
+          <Text style={styles.transactionFrequency}>
+            {item.frequency.charAt(0).toUpperCase() + item.frequency.slice(1)}
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          {item.type === 'inflow' ? (
+            <ArrowDownRight 
+              size={16} 
+              color="#333333"
+              style={styles.transactionIcon} 
+            />
+          ) : (
+            <ArrowUpRight 
+              size={16} 
+              color="#555555"
+              style={styles.transactionIcon} 
+            />
+          )}
+          <Text 
+            style={[
+              styles.transactionAmount,
+              item.type === 'inflow' ? styles.inflowAmount : styles.outflowAmount
+            ]}
+          >
+            {formatAmount(item.average_amount.amount)}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  // Render the calendar day cells
+  const renderDays = () => {
+    return (
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+        {days.map((day, index) => {
+          const dayTransactions = getTransactionsForDay(day);
+          const isCurrentMonth = isSameMonth(day, currentDate);
+          const isDayToday = isToday(day);
+          const isSelected = isSameDay(day, selectedDate);
+          
+          // Count inflow and outflow transactions
+          const inflowCount = dayTransactions.filter(t => t.type === 'inflow').length;
+          const outflowCount = dayTransactions.filter(t => t.type === 'outflow').length;
+          
+          return (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.dayCell,
+                isSelected && styles.selectedDay,
+                isDayToday && styles.highlightedDay,
+              ]}
+              onPress={() => handleDayPress(day)}
+            >
+              <Text 
+                style={[
+                  styles.dayText,
+                  !isCurrentMonth && styles.dayTextMuted
+                ]}
+              >
+                {format(day, 'd')}
+              </Text>
+              
+              {(inflowCount > 0 || outflowCount > 0) && (
+                <View style={styles.transactionDotsContainer}>
+                  {/* Render up to 3 dots to indicate transactions */}
+                  {Array.from({ length: Math.min(inflowCount, 3) }).map((_, i) => (
+                    <View key={`inflow-${i}`} style={[styles.transactionDot, styles.inflowDot]} />
+                  ))}
+                  {Array.from({ length: Math.min(outflowCount, 3) }).map((_, i) => (
+                    <View key={`outflow-${i}`} style={[styles.transactionDot, styles.outflowDot]} />
+                  ))}
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })}
       </View>
     );
-  }, [transactions.isLoading]);
+  };
+
+  // Render the preview panel
+  const renderPreviewPanel = () => {
+    return (
+      <View style={styles.previewContainer}>
+        <View style={styles.previewHeader}>
+          <Text style={styles.previewHeaderText}>
+            {selectedDayTransactions.length > 0 
+              ? `${format(selectedDate, 'MMMM d, yyyy')} (${selectedDayTransactions.length})` 
+              : 'Upcoming Transactions'}
+          </Text>
+        </View>
+        
+        {transactions.isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color="#000000" />
+          </View>
+        ) : selectedDayTransactions.length > 0 ? (
+          <>
+            <ScrollView style={styles.previewContent} nestedScrollEnabled={true}>
+              {selectedDayTransactions.map((item, index) => (
+                <View key={`${item.description}-${index}`}>
+                  {renderTransactionItem({ item })}
+                </View>
+              ))}
+            </ScrollView>
+            
+            <TouchableOpacity 
+              style={styles.seeAllButton}
+              onPress={() => handleViewAllTransactions(selectedDate)}
+            >
+              <Text style={styles.seeAllText}>See All Details</Text>
+            </TouchableOpacity>
+          </>
+        ) : upcomingTransactions.length > 0 ? (
+          <>
+            <ScrollView style={styles.previewContent} nestedScrollEnabled={true}>
+              {upcomingTransactions.slice(0, 5).map((item, index) => (
+                <View key={`${item.description}-${index}`}>
+                  {renderTransactionItem({ item })}
+                </View>
+              ))}
+            </ScrollView>
+            
+            <TouchableOpacity 
+              style={styles.seeAllButton}
+              onPress={() => {
+                if (upcomingTransactions.length > 0) {
+                  const nextTransaction = upcomingTransactions[0];
+                  const nextDate = parseISO(nextTransaction.predicted_next_date);
+                  handleViewAllTransactions(nextDate);
+                }
+              }}
+            >
+              <Text style={styles.seeAllText}>View All Upcoming</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <View style={styles.emptyPreview}>
+            <Text style={styles.emptyPreviewText}>No transactions to display</Text>
+          </View>
+        )}
+      </View>
+    );
+  };
 
   return (
-    <ScrollView 
-      className="flex-1 bg-white"
-      contentContainerStyle={{ paddingBottom: 20 }}
-    >
-      {/* Only show error banner when we have genuine errored connections */}
-      {erroredConnections.length > 0 && (
-        <ConnectionStatusBanner
-          erroredConnections={erroredConnections}
-          onReconnect={handleReconnect}
-        />
-      )}
+    <View style={styles.container}>
+      <ScrollView 
+        contentContainerStyle={{ paddingBottom: 80 }}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+        }
+      >
+        {/* Only show error banner when we have genuine errored connections */}
+        {erroredConnections.length > 0 && (
+          <ConnectionStatusBanner
+            erroredConnections={erroredConnections}
+            onReconnect={handleReconnect}
+          />
+        )}
 
-      {/* Calendar */}
-      <View style={styles.calendarContainer}>
-        <View style={styles.monthHeader}>
-          <TouchableOpacity onPress={prevMonth} className="p-2">
-            <SketchArrow direction="left" />
-          </TouchableOpacity>
-          <Text style={styles.monthText}>
-            {format(currentDate, 'MMMM yyyy')}
-          </Text>
-          <TouchableOpacity onPress={nextMonth} className="p-2">
-            <SketchArrow direction="right" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.weekdayHeader}>
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-            <Text key={day} style={styles.weekdayText}>
-              {day}
+        {/* Calendar */}
+        <View style={styles.calendarContainer}>
+          <View style={styles.monthHeader}>
+            <TouchableOpacity onPress={prevMonth} className="p-2">
+              <SketchArrow direction="left" />
+            </TouchableOpacity>
+            <Text style={styles.monthText}>
+              {format(currentDate, 'MMMM yyyy')}
             </Text>
-          ))}
+            <TouchableOpacity onPress={nextMonth} className="p-2">
+              <SketchArrow direction="right" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.weekdayHeader}>
+            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+              <Text key={index} style={styles.weekdayText}>
+                {day}
+              </Text>
+            ))}
+          </View>
+
+          {renderDays()}
+
+          {/* Overlay loading indicator */}
+          {(isLoading || transactions.isLoading) && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="small" color="#000000" />
+            </View>
+          )}
         </View>
 
-        <View className="flex-row flex-wrap relative">
-          {Array.from({ length: firstDayOffset }).map((_, index) => (
-            <View
-              key={`empty-${index}`}
-              style={[styles.dayCell, { borderColor: 'transparent' }]}
-            />
-          ))}
+        {/* Preview Panel */}
+        {renderPreviewPanel()}
 
-          {days.map((day) => {
-            const dayTransactions = getTransactionsForDay(day);
-            const isToday = isSameDay(day, today);
-
-            return (
-              <TouchableOpacity
-                key={day.toString()}
-                style={[
-                  styles.dayCell,
-                  isToday && styles.selectedDay,
-                ]}
-                onPress={() => handleDayPress(day)}
-                disabled={dayTransactions.length === 0}
-              >
-                <Text style={styles.dayText}>
-                  {format(day, 'd')}
-                </Text>
-                {dayTransactions.length > 0 && (
-                  <View style={styles.transactionDot} />
-                )}
-              </TouchableOpacity>
-            );
-          })}
-
-          {Array.from({ length: (7 - ((days.length + firstDayOffset) % 7)) % 7 }).map((_, index) => (
-            <View
-              key={`empty-end-${index}`}
-              style={[styles.dayCell, { borderColor: 'transparent' }]}
-            />
-          ))}
-
-          <LoadingView />
-        </View>
-      </View>
-
-      {/* Just a simple refresh button */}
-      <View className="items-center mt-6">
+        {/* Just a simple refresh button */}
         <TouchableOpacity
-          className="bg-gray-200 py-3 px-6 rounded-lg flex-row items-center border border-gray-400"
+          style={styles.refreshButton}
           onPress={handleRefresh}
           disabled={isLoading || transactions.isLoading}
         >
-          <Text className="text-gray-700 font-medium">
+          <Text style={styles.refreshButtonText}>
             {isLoading || transactions.isLoading ? "Loading..." : "Refresh"}
           </Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
 
       {/* Error modal for handling reconnection */}
       <ConnectionErrorModal
@@ -661,7 +992,7 @@ const CalendarView = () => {
         onReconnect={handleReconnectConfirm}
         onClose={() => setSelectedConnection(null)}
       />
-    </ScrollView>
+    </View>
   );
 };
 
