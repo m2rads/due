@@ -196,6 +196,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E0E0E0',
     paddingHorizontal: 16,
     paddingVertical: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   previewHeaderText: {
     fontSize: 16,
@@ -866,6 +869,22 @@ const CalendarView = () => {
               ? `${format(selectedDate, 'MMMM d, yyyy')} (${selectedDayTransactions.length})` 
               : 'Upcoming Transactions'}
           </Text>
+          <TouchableOpacity 
+            onPress={() => navigation.navigate('Subscriptions')}
+            style={{ 
+              flexDirection: 'row', 
+              alignItems: 'center',
+              backgroundColor: '#F5F5F5',
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              borderRadius: 4
+            }}
+          >
+            <Text style={{ fontSize: 12, color: '#000000', marginRight: 4 }}>
+              Manage
+            </Text>
+            <ArrowUpRight size={12} color="#000000" />
+          </TouchableOpacity>
         </View>
         
         {transactions.isLoading ? (

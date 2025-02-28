@@ -6,7 +6,7 @@ import { StatusBar, View, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
-import { Calendar, PlusCircle, Settings } from 'lucide-react-native';
+import { Calendar, PlusCircle, Settings, CreditCard } from 'lucide-react-native';
 import AddAccountScreen from './screens/main/AddAccountScreen';
 import CalendarView from './screens/main/CalendarView';
 import DayDetailView from './screens/main/DayDetailView';
@@ -19,6 +19,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthStackParamList, MainStackParamList, MainTabsParamList } from './types/auth';
 import ErrorBoundaryWrapper from './components/ErrorBoundary';
 import LoadingScreen from './components/LoadingScreen';
+import SubscriptionManagement from './screens/main/SubscriptionManagement';
+import SubscriptionEditor from './screens/main/SubscriptionEditor';
 
 const Stack = createNativeStackNavigator();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -124,6 +126,14 @@ const MainNavigator = () => (
             </View>
           );
         }
+        if (route.name === 'Subscriptions') {
+          return (
+            <View className="items-center">
+              <CreditCard size={24} color={color} />
+              <Text className="text-xs mt-1" style={{ color }}>Subscriptions</Text>
+            </View>
+          );
+        }
         if (route.name === 'AccountsTab') {
           return (
             <View className="items-center">
@@ -147,6 +157,13 @@ const MainNavigator = () => (
       component={CalendarView}
       options={{
         title: 'Calendar',
+      }}
+    />
+    <Tab.Screen
+      name="Subscriptions"
+      component={SubscriptionManagement}
+      options={{
+        title: 'Subscriptions',
       }}
     />
     <Tab.Screen
@@ -195,6 +212,13 @@ const Navigation = () => {
             component={AddAccountScreen}
             options={{
               title: 'Add Account'
+            }}
+          />
+          <MainStack.Screen
+            name="SubscriptionEditor"
+            component={SubscriptionEditor}
+            options={{
+              title: 'Subscription'
             }}
           />
         </MainStack.Navigator>
