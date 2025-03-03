@@ -45,7 +45,7 @@ const Header = ({ title, showBack = false }: { title: string, showBack?: boolean
   const navigation = useNavigation();
   
   return (
-    <View className="bg-white px-4 pt-12 pb-4 border-b border-gray-200 flex-row items-center">
+    <View className="bg-white px-4 pt-16 pb-4 flex-row items-center">
       {showBack && (
         <TouchableOpacity 
           onPress={() => navigation.goBack()} 
