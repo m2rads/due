@@ -4,7 +4,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { ArrowDownRight, ArrowUpRight } from 'lucide-react-native';
 import { format, parseISO } from 'date-fns';
-import { TransactionItemProps } from '../types/calendar';
+import { TransactionItemProps } from '../../types/calendar';
 
 const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, onPress }) => {
   // Parse the date

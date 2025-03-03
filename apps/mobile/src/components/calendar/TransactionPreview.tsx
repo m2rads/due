@@ -4,7 +4,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { ArrowUpRight } from 'lucide-react-native';
 import { format, parseISO } from 'date-fns';
-import { TransactionPreviewProps } from '../types/calendar';
+import { TransactionPreviewProps } from '../../types/calendar';
 import TransactionItem from './TransactionItem';
 
 const TransactionPreview: React.FC<TransactionPreviewProps> = ({

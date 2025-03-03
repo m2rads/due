@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-import { CalendarDayProps } from '../types/calendar';
+import { CalendarDayProps } from '../../types/calendar';
 
 // Calculate a consistent cell size for better layout
 const SCREEN_WIDTH = Dimensions.get('window').width;

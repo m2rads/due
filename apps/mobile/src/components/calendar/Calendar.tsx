@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addDays, isSameMonth, isSameDay, isToday } from 'date-fns';
-import { CalendarProps } from '../types/calendar';
+import { CalendarProps } from '../../types/calendar';
 import CalendarDay from './CalendarDay';
 import SketchArrow from './SketchArrow';
 
@@ -47,7 +47,7 @@ const Calendar: React.FC<CalendarProps> = ({
 
   // Organize days into weeks for a grid layout
   const calendarWeeks = useMemo(() => {
-    const weeks = [];
+    const weeks: Date[][] = [];
     const weekCount = Math.ceil(days.length / 7);
     
     for (let i = 0; i < weekCount; i++) {

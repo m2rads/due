@@ -21,8 +21,8 @@ import Toast from 'react-native-toast-message';
 import { BankConnection } from '@due/types';
 
 // Import custom components
-import Calendar from '../../components/Calendar';
-import TransactionPreview from '../../components/TransactionPreview';
+import Calendar from '../../components/calendar/Calendar';
+import TransactionPreview from '../../components/calendar/TransactionPreview';
 
 // Import types from separate file
 import { 
