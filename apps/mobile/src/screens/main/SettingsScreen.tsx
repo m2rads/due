@@ -1,6 +1,7 @@
 /// <reference types="nativewind/types" />
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, Alert, ScrollView, Switch, GestureResponderEvent } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
 import { 
   LogOut, 
@@ -12,7 +13,8 @@ import {
   HelpCircle,
   ChevronRight,
   FileText,
-  Mail
+  Mail,
+  ChevronLeft
 } from 'lucide-react-native';
 
 // Define the shape of the setting item props
@@ -27,6 +29,27 @@ interface SettingItemProps {
   onPress?: (() => void) | undefined;
   textColor?: string;
 }
+
+// Custom header component
+const Header = ({ title, showBack = false }: { title: string, showBack?: boolean }) => {
+  const navigation = useNavigation();
+  
+  return (
+    <View className="bg-white px-4 pt-12 pb-4 border-b border-gray-200 flex-row items-center">
+      {showBack && (
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          className="mr-2 p-1"
+        >
+          <ChevronLeft size={24} color="#000000" />
+        </TouchableOpacity>
+      )}
+      <Text className="text-xl font-bold text-gray-800 flex-1">
+        {title}
+      </Text>
+    </View>
+  );
+};
 
 const SettingsScreen = () => {
   const { signOut, deleteAccount, user, profile } = useAuth();
@@ -126,113 +149,117 @@ const SettingsScreen = () => {
   };
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      {/* Profile section */}
-      <View className="bg-white rounded-xl shadow-sm mx-4 mt-6 mb-4 overflow-hidden">
-        <View className="bg-gray-800 px-5 py-4">
-          <Text className="text-white font-semibold text-base">Profile</Text>
-        </View>
-        
-        <View className="px-5 py-5 flex-row items-center">
-          <View className="bg-gray-200 w-16 h-16 rounded-full items-center justify-center mr-4">
-            <User size={32} color="#374151" />
+    <View className="flex-1 bg-gray-50">
+      <Header title="Settings" />
+      
+      <ScrollView className="flex-1">
+        {/* Profile section */}
+        <View className="bg-white rounded-xl shadow-sm mx-4 mt-6 mb-4 overflow-hidden">
+          <View className="bg-gray-800 px-5 py-4">
+            <Text className="text-white font-semibold text-base">Profile</Text>
           </View>
-          <View className="flex-1">
-            <Text className="text-lg font-bold text-gray-800">{userName}</Text>
-            <Text className="text-sm text-gray-500">{userEmail}</Text>
+          
+          <View className="px-5 py-5 flex-row items-center">
+            <View className="bg-gray-200 w-16 h-16 rounded-full items-center justify-center mr-4">
+              <User size={32} color="#374151" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-lg font-bold text-gray-800">{userName}</Text>
+              <Text className="text-sm text-gray-500">{userEmail}</Text>
+            </View>
           </View>
         </View>
-      </View>
-      
-      {/* App Settings section */}
-      <View className="bg-white rounded-xl shadow-sm mx-4 mb-4 overflow-hidden">
-        <View className="bg-gray-800 px-5 py-4">
-          <Text className="text-white font-semibold text-base">App Settings</Text>
+        
+        {/* App Settings section */}
+        <View className="bg-white rounded-xl shadow-sm mx-4 mb-4 overflow-hidden">
+          <View className="bg-gray-800 px-5 py-4">
+            <Text className="text-white font-semibold text-base">App Settings</Text>
+          </View>
+          
+          {renderSettingItem({
+            icon: <Bell size={20} color="#374151" />,
+            title: "Notifications",
+            subtitle: "Receive alerts about upcoming payments",
+            showToggle: true,
+            toggleValue: notificationsEnabled,
+            onToggle: toggleNotifications
+          })}
+          
+          {renderSettingItem({
+            icon: <Moon size={20} color="#374151" />,
+            title: "Dark Mode",
+            subtitle: "Change app appearance",
+            showToggle: true,
+            toggleValue: darkModeEnabled,
+            onToggle: toggleDarkMode
+          })}
         </View>
         
-        {renderSettingItem({
-          icon: <Bell size={20} color="#374151" />,
-          title: "Notifications",
-          subtitle: "Receive alerts about upcoming payments",
-          showToggle: true,
-          toggleValue: notificationsEnabled,
-          onToggle: toggleNotifications
-        })}
-        
-        {renderSettingItem({
-          icon: <Moon size={20} color="#374151" />,
-          title: "Dark Mode",
-          subtitle: "Change app appearance",
-          showToggle: true,
-          toggleValue: darkModeEnabled,
-          onToggle: toggleDarkMode
-        })}
-      </View>
-      
-      {/* Help & Support */}
-      <View className="bg-white rounded-xl shadow-sm mx-4 mb-4 overflow-hidden">
-        <View className="bg-gray-800 px-5 py-4">
-          <Text className="text-white font-semibold text-base">Help & Support</Text>
+        {/* Help & Support */}
+        <View className="bg-white rounded-xl shadow-sm mx-4 mb-4 overflow-hidden">
+          <View className="bg-gray-800 px-5 py-4">
+            <Text className="text-white font-semibold text-base">Help & Support</Text>
+          </View>
+          
+          {renderSettingItem({
+            icon: <HelpCircle size={20} color="#374151" />,
+            title: "FAQ",
+            showChevron: true,
+            onPress: () => console.log("FAQ pressed")
+          })}
+          
+          {renderSettingItem({
+            icon: <Mail size={20} color="#374151" />,
+            title: "Contact Support",
+            showChevron: true,
+            onPress: () => console.log("Contact Support pressed")
+          })}
+          
+          {renderSettingItem({
+            icon: <FileText size={20} color="#374151" />,
+            title: "Privacy Policy",
+            showChevron: true,
+            onPress: () => console.log("Privacy Policy pressed")
+          })}
+          
+          {renderSettingItem({
+            icon: <Shield size={20} color="#374151" />,
+            title: "Terms of Service",
+            showChevron: true,
+            onPress: () => console.log("Terms of Service pressed"),
+            subtitle: "Last updated: June 2023"
+          })}
         </View>
         
-        {renderSettingItem({
-          icon: <HelpCircle size={20} color="#374151" />,
-          title: "FAQ",
-          showChevron: true,
-          onPress: () => console.log("FAQ pressed")
-        })}
-        
-        {renderSettingItem({
-          icon: <Mail size={20} color="#374151" />,
-          title: "Contact Support",
-          showChevron: true,
-          onPress: () => console.log("Contact Support pressed")
-        })}
-        
-        {renderSettingItem({
-          icon: <FileText size={20} color="#374151" />,
-          title: "Privacy Policy",
-          showChevron: true,
-          onPress: () => console.log("Privacy Policy pressed")
-        })}
-        
-        {renderSettingItem({
-          icon: <Shield size={20} color="#374151" />,
-          title: "Terms of Service",
-          showChevron: true,
-          onPress: () => console.log("Terms of Service pressed"),
-          subtitle: "Last updated: June 2023"
-        })}
-      </View>
-      
-      {/* Account Actions */}
-      <View className="bg-white rounded-xl shadow-sm mx-4 mb-6 overflow-hidden">
-        <View className="bg-gray-800 px-5 py-4">
-          <Text className="text-white font-semibold text-base">Account</Text>
+        {/* Account Actions */}
+        <View className="bg-white rounded-xl shadow-sm mx-4 mb-6 overflow-hidden">
+          <View className="bg-gray-800 px-5 py-4">
+            <Text className="text-white font-semibold text-base">Account</Text>
+          </View>
+          
+          {renderSettingItem({
+            icon: <LogOut size={20} color="#EF4444" />,
+            title: "Log Out",
+            textColor: "text-red-500",
+            onPress: signOut
+          })}
+          
+          {renderSettingItem({
+            icon: <Trash2 size={20} color="#991B1B" />,
+            title: "Delete Account",
+            subtitle: "All your data will be permanently removed",
+            textColor: "text-red-700",
+            onPress: confirmDelete
+          })}
         </View>
         
-        {renderSettingItem({
-          icon: <LogOut size={20} color="#EF4444" />,
-          title: "Log Out",
-          textColor: "text-red-500",
-          onPress: signOut
-        })}
-        
-        {renderSettingItem({
-          icon: <Trash2 size={20} color="#991B1B" />,
-          title: "Delete Account",
-          subtitle: "All your data will be permanently removed",
-          textColor: "text-red-700",
-          onPress: confirmDelete
-        })}
-      </View>
-      
-      <View className="pb-8 px-4">
-        <Text className="text-center text-gray-400 text-xs">
-          Due App v1.0.1
-        </Text>
-      </View>
-    </ScrollView>
+        <View className="pb-8 px-4">
+          <Text className="text-center text-gray-400 text-xs">
+            Due App v1.0.1
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 

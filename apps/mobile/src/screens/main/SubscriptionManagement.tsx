@@ -11,8 +11,8 @@ import {
   FlatList,
   Alert
 } from 'react-native';
-import { ArrowUpRight, Clock, Tag, Calendar as CalendarIcon, Sliders, Plus, Search, Edit2, Trash2, Filter } from 'lucide-react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { ArrowUpRight, Clock, Tag, Calendar as CalendarIcon, Sliders, Plus, Search, Edit2, Trash2, Filter, ChevronLeft } from 'lucide-react-native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../types/auth';
 import { plaidService } from '../../services/plaidService';
@@ -307,8 +307,31 @@ const styles = StyleSheet.create({
   },
 });
 
+// Custom header component
+const Header = ({ title, showBack = false }: { title: string, showBack?: boolean }) => {
+  const navigation = useNavigation();
+  
+  return (
+    <View className="bg-white px-4 pt-12 pb-4 border-b border-gray-200 flex-row items-center">
+      {showBack && (
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          className="mr-2 p-1"
+        >
+          <ChevronLeft size={24} color="#000000" />
+        </TouchableOpacity>
+      )}
+      <Text className="text-xl font-bold text-gray-800 flex-1">
+        {title}
+      </Text>
+    </View>
+  );
+};
+
 const SubscriptionManagement = () => {
   const navigation = useNavigation<NavigationProp>();
+  const route = useRoute();
+  const isInTab = route.name === 'Subscriptions';
   const [activeTab, setActiveTab] = useState<'all' | 'outflow' | 'inflow'>('outflow'); // Default to outflow (subscriptions)
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -625,26 +648,15 @@ const SubscriptionManagement = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Subscriptions</Text>
-        
-        <TouchableOpacity 
-          style={styles.filterButton}
-          onPress={() => setShowFilterModal(true)}
-        >
-          <Filter size={14} color="#000000" />
-          <Text style={styles.filterText}>Filter</Text>
+      <Header title="Subscriptions" showBack={!isInTab} />
+      
+      {/* Search Container - keep this */}
+      <View style={styles.searchContainer}>
+        <TouchableOpacity style={styles.searchInput}>
+          <Search size={16} color="#888888" />
+          <Text style={styles.searchPlaceholder}>Search subscriptions...</Text>
         </TouchableOpacity>
       </View>
-      
-      {/* Search Input (non-functional placeholder) */}
-      <TouchableOpacity style={styles.searchContainer}>
-        <View style={styles.searchInput}>
-          <Search size={16} color="#888888" />
-          <Text style={styles.searchPlaceholder}>Search subscriptions</Text>
-        </View>
-      </TouchableOpacity>
       
       {/* Tabs */}
       <View style={styles.tabContainer}>
@@ -720,8 +732,8 @@ const SubscriptionManagement = () => {
         }
       />
       
-      {/* Floating Action Button */}
-      <TouchableOpacity 
+      {/* Floating Add Button */}
+      <TouchableOpacity
         style={styles.addButton}
         onPress={handleAddSubscription}
       >

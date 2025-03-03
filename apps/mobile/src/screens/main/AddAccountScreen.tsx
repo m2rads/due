@@ -7,6 +7,8 @@ import { BankConnection } from '@due/types';
 import { plaidService, PlaidLinkMetadata } from '../../services/plaidService';
 import BankConnectionsList from '../../components/BankConnectionsList';
 import { useAuth } from '../../context/AuthContext';
+import { ChevronLeft } from 'lucide-react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 interface ConnectionState {
   isConnecting: boolean;
@@ -14,7 +16,29 @@ interface ConnectionState {
   error: string | null;
 }
 
+// Custom header component
+const Header = ({ title, showBack = false }: { title: string, showBack?: boolean }) => {
+  const navigation = useNavigation();
+  
+  return (
+    <View className="bg-white px-4 pt-12 pb-4 border-b border-gray-200 flex-row items-center">
+      {showBack && (
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          className="mr-2 p-1"
+        >
+          <ChevronLeft size={24} color="#000000" />
+        </TouchableOpacity>
+      )}
+      <Text className="text-xl font-bold text-gray-800 flex-1">
+        {title}
+      </Text>
+    </View>
+  );
+};
+
 const AddAccountScreen = ({ navigation }: any) => {
+  const route = useRoute();
   const { isAuthenticated } = useAuth();
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [connections, setConnections] = useState<BankConnection[]>([]);
@@ -23,6 +47,9 @@ const AddAccountScreen = ({ navigation }: any) => {
     isLoading: true,
     error: null
   });
+  
+  // Check if we're in a tab or a stack screen
+  const isInTab = route.name === 'AccountsTab';
 
   // Cancel any ongoing Plaid processes when component unmounts
   useEffect(() => {
@@ -371,8 +398,10 @@ const AddAccountScreen = ({ navigation }: any) => {
 
   return (
     <View className="flex-1 bg-gray-100">
+      <Header title="Add Account" showBack={!isInTab} />
+      
       {connections.length > 0 ? (
-        <>
+        <View className="flex-1">
           <BankConnectionsList
             connections={connections}
             isRefreshing={connectionState.isLoading}
@@ -399,9 +428,9 @@ const AddAccountScreen = ({ navigation }: any) => {
               )}
             </TouchableOpacity>
           </View>
-        </>
+        </View>
       ) : (
-        <View className="flex-1 px-6 pt-10">
+        <View className="flex-1 px-6 pt-6">
           <View className="bg-white rounded-xl shadow-md overflow-hidden">
             <View className="bg-gray-800 px-5 py-4">
               <Text className="text-white font-semibold text-lg text-center">

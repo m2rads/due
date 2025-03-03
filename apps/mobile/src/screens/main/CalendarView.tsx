@@ -19,6 +19,7 @@ import ConnectionStatusBanner from '../../components/ConnectionStatusBanner';
 import ConnectionErrorModal from '../../components/ConnectionErrorModal';
 import Toast from 'react-native-toast-message';
 import { BankConnection } from '@due/types';
+import { ChevronLeft } from 'lucide-react-native';
 
 // Import custom components
 import Calendar from '../../components/calendar/Calendar';
@@ -39,10 +40,32 @@ const RETRY_DELAY = 1000;
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 
+// Custom header component
+const Header = ({ title, showBack = false }: { title: string, showBack?: boolean }) => {
+  const navigation = useNavigation();
+  
+  return (
+    <View className="bg-white px-4 pt-12 pb-4 border-b border-gray-200 flex-row items-center">
+      {showBack && (
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          className="mr-2 p-1"
+        >
+          <ChevronLeft size={24} color="#000000" />
+        </TouchableOpacity>
+      )}
+      <Text className="text-xl font-bold text-gray-800 flex-1">
+        {title}
+      </Text>
+    </View>
+  );
+};
+
 const CalendarView = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute();
   const params = route.params as RouteParams | undefined;
+  const isInTab = route.name === 'Calendar';
   
   // Debug renders with a counter
   const renderCountRef = useRef(0);
@@ -442,6 +465,8 @@ const CalendarView = () => {
 
   return (
     <View className="flex-1 bg-white">
+      <Header title="Calendar" showBack={!isInTab} />
+      
       <ScrollView 
         className="pb-20"
         refreshControl={

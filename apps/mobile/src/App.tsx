@@ -115,10 +115,7 @@ const MainNavigator = () => (
   <Tab.Navigator
     screenOptions={({ route }) => ({
       ...tabBarOptions,
-      headerStyle: {
-        backgroundColor: '#FFFFFF',
-      },
-      headerTintColor: '#000000',
+      headerShown: false,
       tabBarIcon: ({ color, size }) => {
         if (route.name === 'Calendar') {
           return (
@@ -157,30 +154,18 @@ const MainNavigator = () => (
     <Tab.Screen
       name="Calendar"
       component={CalendarView}
-      options={{
-        title: 'Calendar',
-      }}
     />
     <Tab.Screen
       name="Subscriptions"
       component={SubscriptionManagement}
-      options={{
-        title: 'Subscriptions',
-      }}
     />
     <Tab.Screen
       name="AccountsTab"
       component={AddAccountScreen}
-      options={{
-        title: 'Add Account',
-      }}
     />
     <Tab.Screen
       name="SettingsTab"
       component={SettingsScreen}
-      options={{
-        title: 'Settings',
-      }}
     />
   </Tab.Navigator>
 );
@@ -196,32 +181,27 @@ const Navigation = () => {
     <NavigationContainer theme={PlaidTheme}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       {isAuthenticated ? (
-        <MainStack.Navigator screenOptions={screenOptions}>
+        <MainStack.Navigator 
+          screenOptions={{
+            ...screenOptions,
+            headerShown: false,
+          }}
+        >
           <MainStack.Screen
             name="Main"
             component={MainNavigator}
-            options={{ headerShown: false }}
           />
           <MainStack.Screen
             name="DayDetail"
             component={DayDetailView}
-            options={{
-              title: 'Daily Transactions'
-            }}
           />
           <MainStack.Screen
             name="AddAccount"
             component={AddAccountScreen}
-            options={{
-              title: 'Add Account'
-            }}
           />
           <MainStack.Screen
             name="SubscriptionEditor"
             component={SubscriptionEditor}
-            options={{
-              title: 'Subscription'
-            }}
           />
         </MainStack.Navigator>
       ) : (
