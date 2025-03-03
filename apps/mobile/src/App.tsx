@@ -68,7 +68,7 @@ const screenOptions = {
 
 const tabBarOptions = {
   tabBarStyle: {
-    height: 90,
+    height: 70,
     backgroundColor: '#FFFFFF',
     borderTopColor: '#E5E7EB',
   },
@@ -77,7 +77,7 @@ const tabBarOptions = {
   },
   tabBarActiveTintColor: '#000000',
   tabBarInactiveTintColor: '#9CA3AF',
-  tabBarShowLabel: true,
+  tabBarShowLabel: false,
   tabBarHideOnKeyboard: true,
   tabBarBackground: () => (
     <View className="flex-1 bg-white border-t border-gray-200" />
@@ -118,35 +118,15 @@ const MainNavigator = () => (
       headerShown: false,
       tabBarIcon: ({ color, size }) => {
         if (route.name === 'Calendar') {
-          return (
-            <View className="items-center">
-              <Calendar size={24} color={color} />
-              <Text className="text-xs mt-1" style={{ color }}>Calendar</Text>
-            </View>
-          );
+          return <Calendar size={26} color={color} />;
         }
         if (route.name === 'Subscriptions') {
-          return (
-            <View className="items-center">
-              <CreditCard size={24} color={color} />
-              <Text className="text-xs mt-1" style={{ color }}>Subscriptions</Text>
-            </View>
-          );
+          return <CreditCard size={26} color={color} />;
         }
         if (route.name === 'AccountsTab') {
-          return (
-            <View className="items-center">
-              <PlusCircle size={24} color={color} />
-              <Text className="text-xs mt-1" style={{ color }}>Add Account</Text>
-            </View>
-          );
+          return <PlusCircle size={26} color={color} />;
         }
-        return (
-          <View className="items-center">
-            <Settings size={24} color={color} />
-            <Text className="text-xs mt-1" style={{ color }}>Settings</Text>
-          </View>
-        );
+        return <Settings size={26} color={color} />;
       },
       tabBarLabel: () => null,
     })}
