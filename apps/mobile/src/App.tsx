@@ -30,20 +30,20 @@ const Tab = createBottomTabNavigator<MainTabsParamList>();
 const PlaidTheme = {
   dark: false,
   colors: {
-    primary: '#FFFFFF',
-    background: '#000000',
+    primary: '#000000',
+    background: '#F9FAFB',
     card: '#FFFFFF',
     text: '#000000',
-    border: '#000000',
-    notification: '#FFFFFF',
+    border: '#E5E7EB',
+    notification: '#EF4444',
   },
 };
 
 const screenOptions = {
   headerStyle: {
-    backgroundColor: '#000000',
+    backgroundColor: '#FFFFFF',
   },
-  headerTintColor: '#fff',
+  headerTintColor: '#000000',
   animation: 'slide_from_right' as const,
   gestureEnabled: true,
   gestureDirection: 'horizontal' as const,
@@ -69,16 +69,18 @@ const screenOptions = {
 const tabBarOptions = {
   tabBarStyle: {
     height: 90,
+    backgroundColor: '#FFFFFF',
+    borderTopColor: '#E5E7EB',
   },
   tabBarItemStyle: {
     paddingVertical: 8,
   },
-  tabBarActiveTintColor: '#FFFFFF',
-  tabBarInactiveTintColor: '#666666',
+  tabBarActiveTintColor: '#000000',
+  tabBarInactiveTintColor: '#9CA3AF',
   tabBarShowLabel: true,
   tabBarHideOnKeyboard: true,
   tabBarBackground: () => (
-    <View className="flex-1 bg-black border-t border-neutral-800" />
+    <View className="flex-1 bg-white border-t border-gray-200" />
   ),
 } as const;
 
@@ -114,9 +116,9 @@ const MainNavigator = () => (
     screenOptions={({ route }) => ({
       ...tabBarOptions,
       headerStyle: {
-        backgroundColor: '#000000',
+        backgroundColor: '#FFFFFF',
       },
-      headerTintColor: '#fff',
+      headerTintColor: '#000000',
       tabBarIcon: ({ color, size }) => {
         if (route.name === 'Calendar') {
           return (
@@ -192,7 +194,7 @@ const Navigation = () => {
 
   return (
     <NavigationContainer theme={PlaidTheme}>
-      <StatusBar barStyle="light-content" backgroundColor="#000000" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       {isAuthenticated ? (
         <MainStack.Navigator screenOptions={screenOptions}>
           <MainStack.Screen
