@@ -21,7 +21,7 @@ const Header = ({ title, showBack = false }: { title: string, showBack?: boolean
   const navigation = useNavigation();
   
   return (
-    <View className="bg-white px-4 pt-16 pb-4 flex-row items-center">
+    <View className="bg-gray-100 px-4 pt-16 pb-4 flex-row items-center">
       {showBack && (
         <TouchableOpacity 
           onPress={() => navigation.goBack()} 
@@ -411,7 +411,7 @@ const AddAccountScreen = ({ navigation }: any) => {
           />
           
           {/* Add button to connect another account */}
-          <View className="px-4 py-4 bg-white shadow-md border-t border-gray-200">
+          <View className="px-4 py-4">
             <TouchableOpacity
               onPress={handleOpenLink}
               disabled={connectionState.isConnecting}
