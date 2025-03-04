@@ -70,7 +70,6 @@ export interface TransactionPreviewProps {
   upcomingTransactions: TransactionWithType[];
   isLoading: boolean;
   onViewAllTransactions: (day: Date) => void;
-  onManageSubscriptions: () => void;
 }
 
 // Props for the TransactionItem component

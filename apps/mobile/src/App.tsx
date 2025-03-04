@@ -6,7 +6,7 @@ import { StatusBar, View, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
-import { Calendar, PlusCircle, Settings, CreditCard } from 'lucide-react-native';
+import { Calendar, PlusCircle, Settings } from 'lucide-react-native';
 import AddAccountScreen from './screens/main/AddAccountScreen';
 import CalendarView from './screens/main/CalendarView';
 import DayDetailView from './screens/main/DayDetailView';
@@ -19,8 +19,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthStackParamList, MainStackParamList, MainTabsParamList } from './types/auth';
 import ErrorBoundaryWrapper from './components/ErrorBoundary';
 import LoadingScreen from './components/LoadingScreen';
-import SubscriptionManagement from './screens/main/SubscriptionManagement';
-import SubscriptionEditor from './screens/main/SubscriptionEditor';
 
 const Stack = createNativeStackNavigator();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -120,9 +118,6 @@ const MainNavigator = () => (
         if (route.name === 'Calendar') {
           return <Calendar size={26} color={color} />;
         }
-        if (route.name === 'Subscriptions') {
-          return <CreditCard size={26} color={color} />;
-        }
         if (route.name === 'AccountsTab') {
           return <PlusCircle size={26} color={color} />;
         }
@@ -134,10 +129,6 @@ const MainNavigator = () => (
     <Tab.Screen
       name="Calendar"
       component={CalendarView}
-    />
-    <Tab.Screen
-      name="Subscriptions"
-      component={SubscriptionManagement}
     />
     <Tab.Screen
       name="AccountsTab"
@@ -178,10 +169,6 @@ const Navigation = () => {
           <MainStack.Screen
             name="AddAccount"
             component={AddAccountScreen}
-          />
-          <MainStack.Screen
-            name="SubscriptionEditor"
-            component={SubscriptionEditor}
           />
         </MainStack.Navigator>
       ) : (

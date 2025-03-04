@@ -12,8 +12,7 @@ const TransactionPreview: React.FC<TransactionPreviewProps> = ({
   selectedDayTransactions,
   upcomingTransactions,
   isLoading,
-  onViewAllTransactions,
-  onManageSubscriptions
+  onViewAllTransactions
 }) => {
   return (
     <View className="mx-4 bg-white rounded-xl border border-gray-200 shadow-sm mb-4">
@@ -23,15 +22,6 @@ const TransactionPreview: React.FC<TransactionPreviewProps> = ({
             ? `${format(selectedDate, 'MMMM d, yyyy')} (${selectedDayTransactions.length})` 
             : 'Upcoming Transactions'}
         </Text>
-        <TouchableOpacity 
-          onPress={onManageSubscriptions}
-          className="flex-row items-center bg-gray-100 px-2 py-1 rounded"
-        >
-          <Text className="text-xs text-black mr-1">
-            Manage
-          </Text>
-          <ArrowUpRight size={12} color="#000000" />
-        </TouchableOpacity>
       </View>
       
       {isLoading ? (

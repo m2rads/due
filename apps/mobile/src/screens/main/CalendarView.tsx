@@ -433,6 +433,20 @@ const CalendarView = () => {
 
   const handleDayPress = (day: Date) => {
     setSelectedDate(day);
+    const dayTransactions = getTransactionsForDay(day);
+    if (dayTransactions.length > 0) {
+      // Get unique banks represented in these transactions
+      const uniqueBanks = new Set(dayTransactions.map(t => t.institutionId).filter(Boolean));
+      const uniqueBankCount = uniqueBanks.size;
+      const uniqueBankNames = new Set(dayTransactions.map(t => t.institutionName).filter(Boolean));
+      
+      console.log(`[CalendarView] Navigating to DayDetail with ${dayTransactions.length} transactions from ${uniqueBankCount} banks (${uniqueBankNames})`);
+      
+      navigation.navigate('DayDetail', {
+        date: day.toISOString(),
+        transactions: dayTransactions
+      });
+    }
   };
 
   const handleViewAllTransactions = (day: Date) => {
@@ -455,10 +469,6 @@ const CalendarView = () => {
         transactions: dayTransactions
       });
     }
-  };
-
-  const handleManageSubscriptions = () => {
-    navigation.navigate('Subscriptions');
   };
 
   const erroredConnections = getErroredConnections();
@@ -499,7 +509,6 @@ const CalendarView = () => {
           upcomingTransactions={upcomingTransactions()}
           isLoading={isLoading || transactions.isLoading}
           onViewAllTransactions={handleViewAllTransactions}
-          onManageSubscriptions={handleManageSubscriptions}
         />
 
         {/* Refresh Button */}

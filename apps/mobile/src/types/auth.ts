@@ -1,5 +1,6 @@
 import { User } from '@supabase/supabase-js';
 import { SignInBody, SignUpBody, Profile } from '@due/types';
+import { TransactionStream } from './calendar';
 
 // Mobile-specific types
 export interface AuthState {
@@ -40,27 +41,15 @@ export type AccountsTabParamList = {
   AddAccount: undefined;
 };
 
-// Transaction and subscription type definitions
-export interface TransactionWithType {
+// Transaction type definitions
+export interface TransactionWithType extends TransactionStream {
   type: 'inflow' | 'outflow';
-  id?: string;
-  description: string;
-  merchant_name: string;
-  average_amount: { amount: number };
-  frequency: string;
-  category: string[];
-  last_date: string;
-  predicted_next_date: string;
-  is_active: boolean;
-  status: string;
-  institutionId?: string;
-  institutionName?: string;
+  id?: string; // Optional ID for operations
 }
 
 // Main tabs navigator
 export type MainTabsParamList = {
   Calendar: undefined;
-  Subscriptions: undefined;
   AccountsTab: undefined;
   SettingsTab: undefined;
 };
@@ -77,16 +66,10 @@ export type MainStackParamList = {
     unlinked?: boolean;
     timestamp?: number;
   };
-  Subscriptions: undefined;
   AccountsTab: undefined;
   SettingsTab: undefined;
   
   // Direct screens
   DayDetail: { date: string; transactions: any[] };
   AddAccount: undefined;
-  SubscriptionManagement: undefined;
-  SubscriptionEditor: { 
-    mode: 'create' | 'edit';
-    subscription?: TransactionWithType;
-  };
 };
