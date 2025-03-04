@@ -510,17 +510,6 @@ const CalendarView = () => {
           isLoading={isLoading || transactions.isLoading}
           onViewAllTransactions={handleViewAllTransactions}
         />
-
-        {/* Refresh Button */}
-        <TouchableOpacity
-          className="bg-gray-100 px-4 py-2 rounded-lg border border-gray-200 items-center justify-center mt-4 mb-4 self-center"
-          onPress={handleRefresh}
-          disabled={isLoading || transactions.isLoading}
-        >
-          <Text className="text-black font-medium">
-            {isLoading || transactions.isLoading ? "Loading..." : "Refresh"}
-          </Text>
-        </TouchableOpacity>
       </ScrollView>
 
       {/* Error modal for handling reconnection */}
