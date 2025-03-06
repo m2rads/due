@@ -1,4 +1,4 @@
-# Due - Financial Management App
+# Due - Open Source Financial Management App
 
 A monorepo containing a React Native mobile app and Express.js backend for financial management.
 
