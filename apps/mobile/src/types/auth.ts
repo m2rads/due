@@ -1,5 +1,6 @@
 import { User } from '@supabase/supabase-js';
 import { SignInBody, SignUpBody, Profile } from '@due/types';
+import { TransactionStream } from './calendar';
 
 // Mobile-specific types
 export interface AuthState {
@@ -39,6 +40,12 @@ export type CalendarTabParamList = {
 export type AccountsTabParamList = {
   AddAccount: undefined;
 };
+
+// Transaction type definitions
+export interface TransactionWithType extends TransactionStream {
+  type: 'inflow' | 'outflow';
+  id?: string; // Optional ID for operations
+}
 
 // Main tabs navigator
 export type MainTabsParamList = {

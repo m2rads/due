@@ -28,20 +28,20 @@ const Tab = createBottomTabNavigator<MainTabsParamList>();
 const PlaidTheme = {
   dark: false,
   colors: {
-    primary: '#FFFFFF',
-    background: '#000000',
+    primary: '#000000',
+    background: '#F9FAFB',
     card: '#FFFFFF',
     text: '#000000',
-    border: '#000000',
-    notification: '#FFFFFF',
+    border: '#E5E7EB',
+    notification: '#EF4444',
   },
 };
 
 const screenOptions = {
   headerStyle: {
-    backgroundColor: '#000000',
+    backgroundColor: '#FFFFFF',
   },
-  headerTintColor: '#fff',
+  headerTintColor: '#000000',
   animation: 'slide_from_right' as const,
   gestureEnabled: true,
   gestureDirection: 'horizontal' as const,
@@ -66,17 +66,19 @@ const screenOptions = {
 
 const tabBarOptions = {
   tabBarStyle: {
-    height: 90,
+    height: 70,
+    backgroundColor: '#FFFFFF',
+    borderTopColor: '#E5E7EB',
   },
   tabBarItemStyle: {
     paddingVertical: 8,
   },
-  tabBarActiveTintColor: '#FFFFFF',
-  tabBarInactiveTintColor: '#666666',
-  tabBarShowLabel: true,
+  tabBarActiveTintColor: '#000000',
+  tabBarInactiveTintColor: '#9CA3AF',
+  tabBarShowLabel: false,
   tabBarHideOnKeyboard: true,
   tabBarBackground: () => (
-    <View className="flex-1 bg-black border-t border-neutral-800" />
+    <View className="flex-1 bg-white border-t border-gray-200" />
   ),
 } as const;
 
@@ -111,33 +113,15 @@ const MainNavigator = () => (
   <Tab.Navigator
     screenOptions={({ route }) => ({
       ...tabBarOptions,
-      headerStyle: {
-        backgroundColor: '#000000',
-      },
-      headerTintColor: '#fff',
+      headerShown: false,
       tabBarIcon: ({ color, size }) => {
         if (route.name === 'Calendar') {
-          return (
-            <View className="items-center">
-              <Calendar size={24} color={color} />
-              <Text className="text-xs mt-1" style={{ color }}>Calendar</Text>
-            </View>
-          );
+          return <Calendar size={26} color={color} />;
         }
         if (route.name === 'AccountsTab') {
-          return (
-            <View className="items-center">
-              <PlusCircle size={24} color={color} />
-              <Text className="text-xs mt-1" style={{ color }}>Add Account</Text>
-            </View>
-          );
+          return <PlusCircle size={26} color={color} />;
         }
-        return (
-          <View className="items-center">
-            <Settings size={24} color={color} />
-            <Text className="text-xs mt-1" style={{ color }}>Settings</Text>
-          </View>
-        );
+        return <Settings size={26} color={color} />;
       },
       tabBarLabel: () => null,
     })}
@@ -145,23 +129,14 @@ const MainNavigator = () => (
     <Tab.Screen
       name="Calendar"
       component={CalendarView}
-      options={{
-        title: 'Calendar',
-      }}
     />
     <Tab.Screen
       name="AccountsTab"
       component={AddAccountScreen}
-      options={{
-        title: 'Add Account',
-      }}
     />
     <Tab.Screen
       name="SettingsTab"
       component={SettingsScreen}
-      options={{
-        title: 'Settings',
-      }}
     />
   </Tab.Navigator>
 );
@@ -175,27 +150,25 @@ const Navigation = () => {
 
   return (
     <NavigationContainer theme={PlaidTheme}>
-      <StatusBar barStyle="light-content" backgroundColor="#000000" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       {isAuthenticated ? (
-        <MainStack.Navigator screenOptions={screenOptions}>
+        <MainStack.Navigator 
+          screenOptions={{
+            ...screenOptions,
+            headerShown: false,
+          }}
+        >
           <MainStack.Screen
             name="Main"
             component={MainNavigator}
-            options={{ headerShown: false }}
           />
           <MainStack.Screen
             name="DayDetail"
             component={DayDetailView}
-            options={{
-              title: 'Daily Transactions'
-            }}
           />
           <MainStack.Screen
             name="AddAccount"
             component={AddAccountScreen}
-            options={{
-              title: 'Add Account'
-            }}
           />
         </MainStack.Navigator>
       ) : (

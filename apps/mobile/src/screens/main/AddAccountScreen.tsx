@@ -1,12 +1,14 @@
 /// <reference types="nativewind/types" />
 import React, { useState, useEffect } from 'react';
-import { Platform, View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { Platform, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { create, open, dismissLink, LinkSuccess, LinkExit, LinkIOSPresentationStyle, LinkLogLevel } from 'react-native-plaid-link-sdk';
 import Toast from 'react-native-toast-message';
 import { BankConnection } from '@due/types';
 import { plaidService, PlaidLinkMetadata } from '../../services/plaidService';
 import BankConnectionsList from '../../components/BankConnectionsList';
 import { useAuth } from '../../context/AuthContext';
+import { ChevronLeft } from 'lucide-react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 interface ConnectionState {
   isConnecting: boolean;
@@ -14,160 +16,29 @@ interface ConnectionState {
   error: string | null;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F0FFF0', // Very light green background
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F0FFF0', // Very light green background
-  },
-  loadingText: {
-    fontSize: 14,
-    color: '#004400', // Dark green text
-    marginTop: 12,
-  },
-  windowContainer: {
-    backgroundColor: '#FFFFFF',
-    margin: 16,
-    borderWidth: 1,
-    borderColor: '#004400', // Dark green border
-    borderRadius: 8,
-    overflow: 'hidden',
-    shadowColor: '#004400',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
-    elevation: 3,
-  },
-  windowHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#88AA88', // Medium green header
-    borderBottomWidth: 1,
-    borderBottomColor: '#004400',
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-  },
-  windowTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#004400', // Dark green text
-    textAlign: 'center',
-    flex: 1,
-  },
-  windowButtons: {
-    flexDirection: 'row',
-    position: 'absolute',
-    left: 8,
-  },
-  closeButton: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#FF5F57',
-    borderWidth: 1,
-    borderColor: '#E33E32',
-    marginRight: 6,
-  },
-  minimizeButton: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#FFBD2E',
-    borderWidth: 1,
-    borderColor: '#E09E1A',
-    marginRight: 6,
-  },
-  expandButton: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#28CA42',
-    borderWidth: 1,
-    borderColor: '#17A62E',
-  },
-  emptyStateContainer: {
-    padding: 16,
-    alignItems: 'center',
-    backgroundColor: '#F8FFF8', // Very light green background
-  },
-  titleText: {
-    fontSize: 18,
-    fontWeight: '600', 
-    color: '#004400', // Dark green text
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  descriptionText: {
-    fontSize: 14,
-    color: '#004400', // Dark green text with opacity
-    opacity: 0.8,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  errorText: {
-    fontSize: 14,
-    color: '#8B0000', // Dark red for errors
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  buttonContainer: {
-    marginTop: 16,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    backgroundColor: '#E8F5E8', // Light green background
-    borderTopWidth: 1,
-    borderTopColor: '#B0D2B0',
-  },
-  connectButton: {
-    backgroundColor: '#88AA88', // Medium green button
-    borderWidth: 1,
-    borderColor: '#004400', // Dark green border
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 0,
-    alignItems: 'center',
-  },
-  connectButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF', // White text
-  },
-  disabledButton: {
-    backgroundColor: '#CCCCCC',
-    borderWidth: 1,
-    borderColor: '#999999',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 0,
-    alignItems: 'center',
-  },
-  addAnotherButtonContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#F0FFF0',
-    borderTopWidth: 1,
-    borderTopColor: '#B0D2B0',
-  },
-});
-
-// Simple 90s window close button
-const WindowHeader = ({ title }: { title: string }) => (
-  <View style={styles.windowHeader}>
-    <View style={styles.windowButtons}>
-      <View style={styles.closeButton} />
-      <View style={styles.minimizeButton} />
-      <View style={styles.expandButton} />
+// Custom header component
+const Header = ({ title, showBack = false }: { title: string, showBack?: boolean }) => {
+  const navigation = useNavigation();
+  
+  return (
+    <View className="bg-gray-100 px-4 pt-16 pb-4 flex-row items-center">
+      {showBack && (
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          className="mr-2 p-1"
+        >
+          <ChevronLeft size={24} color="#000000" />
+        </TouchableOpacity>
+      )}
+      <Text className="text-xl font-bold text-gray-800 flex-1">
+        {title}
+      </Text>
     </View>
-    <Text style={styles.windowTitle}>{title}</Text>
-  </View>
-);
+  );
+};
 
 const AddAccountScreen = ({ navigation }: any) => {
+  const route = useRoute();
   const { isAuthenticated } = useAuth();
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [connections, setConnections] = useState<BankConnection[]>([]);
@@ -176,6 +47,9 @@ const AddAccountScreen = ({ navigation }: any) => {
     isLoading: true,
     error: null
   });
+  
+  // Check if we're in a tab or a stack screen
+  const isInTab = route.name === 'AccountsTab';
 
   // Cancel any ongoing Plaid processes when component unmounts
   useEffect(() => {
@@ -515,17 +389,19 @@ const AddAccountScreen = ({ navigation }: any) => {
 
   if (connectionState.isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#000000" />
-        <Text style={styles.loadingText}>Loading your connections...</Text>
+      <View className="flex-1 justify-center items-center bg-gray-100">
+        <ActivityIndicator size="large" color="#333333" />
+        <Text className="text-gray-700 font-medium mt-4">Loading your connections...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-gray-100">
+      <Header title="Add Account" showBack={!isInTab} />
+      
       {connections.length > 0 ? (
-        <>
+        <View className="flex-1">
           <BankConnectionsList
             connections={connections}
             isRefreshing={connectionState.isLoading}
@@ -535,54 +411,65 @@ const AddAccountScreen = ({ navigation }: any) => {
           />
           
           {/* Add button to connect another account */}
-          <View style={styles.addAnotherButtonContainer}>
+          <View className="px-4 py-4">
             <TouchableOpacity
               onPress={handleOpenLink}
               disabled={connectionState.isConnecting}
-              style={connectionState.isConnecting ? styles.disabledButton : styles.connectButton}
+              className={`py-3 px-4 rounded-lg flex-row justify-center items-center ${
+                connectionState.isConnecting ? 'bg-gray-300' : 'bg-gray-800'
+              }`}
             >
               {connectionState.isConnecting ? (
-                <ActivityIndicator color="#000000" />
+                <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={styles.connectButtonText}>
+                <Text className="text-white font-medium">
                   Connect Another Account
                 </Text>
               )}
             </TouchableOpacity>
           </View>
-        </>
+        </View>
       ) : (
-        <View style={styles.windowContainer}>
-          <WindowHeader title="Connect Bank Account" />
-          
-          <View style={styles.emptyStateContainer}>
-            <Text style={styles.titleText}>
-              Due
-            </Text>
-            <Text style={styles.descriptionText}>
-              Connect your bank account to manage your recurring payments
-            </Text>
-            {connectionState.error && (
-              <Text style={styles.errorText}>
-                {connectionState.error}
+        <View className="flex-1 px-6 pt-6">
+          <View className="bg-white rounded-xl shadow-md overflow-hidden">
+            <View className="bg-gray-800 px-5 py-4">
+              <Text className="text-white font-semibold text-lg text-center">
+                Connect Bank Account
               </Text>
-            )}
-          </View>
-          
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              onPress={handleOpenLink}
-              disabled={connectionState.isConnecting}
-              style={connectionState.isConnecting ? styles.disabledButton : styles.connectButton}
-            >
-              {connectionState.isConnecting ? (
-                <ActivityIndicator color="#000000" />
-              ) : (
-                <Text style={styles.connectButtonText}>
-                  Connect Bank Account
-                </Text>
+            </View>
+            
+            <View className="p-6">
+              <Text className="text-2xl font-bold text-gray-800 text-center mb-3">
+                Due
+              </Text>
+              <Text className="text-gray-600 text-center mb-6">
+                Connect your bank account to manage your recurring payments
+              </Text>
+              
+              {connectionState.error && (
+                <View className="bg-red-50 rounded-lg p-4 mb-6">
+                  <Text className="text-red-600 text-center">
+                    {connectionState.error}
+                  </Text>
+                </View>
               )}
-            </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={handleOpenLink}
+                disabled={connectionState.isConnecting}
+                className={`py-3 rounded-lg flex-row justify-center items-center ${
+                  connectionState.isConnecting ? 'bg-gray-300' : 'bg-gray-800'
+                }`}
+              >
+                {connectionState.isConnecting ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text className="text-white font-medium">
+                    Connect Bank Account
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       )}

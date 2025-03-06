@@ -17,7 +17,7 @@ const WelcomeScreen = ({ navigation }: WelcomeScreenProps) => {
           Due
         </Text>
         <Text className="text-lg text-gray-600 text-center mb-8">
-          Track and manage your recurring payments and subscriptions
+          Track and manage your recurring payments
         </Text>
       </View>
 

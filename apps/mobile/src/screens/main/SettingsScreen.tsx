@@ -1,12 +1,61 @@
 /// <reference types="nativewind/types" />
-import React from 'react';
-import { View, TouchableOpacity, Text, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, TouchableOpacity, Text, Alert, ScrollView, Switch, GestureResponderEvent } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
-import { LogOut, Trash2 } from 'lucide-react-native';
+import { 
+  LogOut, 
+  Trash2, 
+  User, 
+  Bell, 
+  Moon, 
+  Shield, 
+  HelpCircle,
+  ChevronRight,
+  FileText,
+  Mail,
+  ChevronLeft
+} from 'lucide-react-native';
+
+// Define the shape of the setting item props
+interface SettingItemProps {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string | null;
+  showToggle?: boolean;
+  toggleValue?: boolean;
+  onToggle?: () => void;
+  showChevron?: boolean;
+  onPress?: (() => void) | undefined;
+  textColor?: string;
+}
+
+// Custom header component
+const Header = ({ title, showBack = false }: { title: string, showBack?: boolean }) => {
+  const navigation = useNavigation();
+  
+  return (
+    <View className="bg-white px-4 pt-16 pb-4 flex-row items-center">
+      {showBack && (
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          className="mr-2 p-1"
+        >
+          <ChevronLeft size={24} color="#000000" />
+        </TouchableOpacity>
+      )}
+      <Text className="text-xl font-bold text-gray-800 flex-1">
+        {title}
+      </Text>
+    </View>
+  );
+};
 
 const SettingsScreen = () => {
-  const { signOut, deleteAccount } = useAuth();
-
+  const { signOut, deleteAccount, user, profile } = useAuth();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+  
   const handleDeleteAccount = async () => {
     try {
       await deleteAccount();
@@ -43,25 +92,173 @@ const SettingsScreen = () => {
     );
   };
 
+  // Setting toggle handlers
+  const toggleNotifications = () => {
+    setNotificationsEnabled(!notificationsEnabled);
+    // Here you would implement actual notification toggling logic
+  };
+
+  const toggleDarkMode = () => {
+    setDarkModeEnabled(!darkModeEnabled);
+    // Here you would implement actual dark mode toggling logic
+  };
+
+  // Format the user name
+  const userName = profile?.full_name || user?.email?.split('@')[0] || 'User';
+  const userEmail = user?.email || '';
+  
+  const renderSettingItem = (props: SettingItemProps) => {
+    const { 
+      icon, 
+      title, 
+      subtitle = null, 
+      showToggle = false, 
+      toggleValue = false,
+      onToggle,
+      showChevron = false,
+      onPress,
+      textColor = 'text-gray-800'
+    } = props;
+
+    return (
+      <TouchableOpacity 
+        className="flex-row items-center py-4 px-5 border-b border-gray-100"
+        onPress={onPress}
+        disabled={!onPress}
+      >
+        <View className="w-8 items-center mr-3">
+          {icon}
+        </View>
+        <View className="flex-1">
+          <Text className={`font-medium ${textColor}`}>{title}</Text>
+          {subtitle && <Text className="text-xs text-gray-500 mt-1">{subtitle}</Text>}
+        </View>
+        {showToggle && onToggle && (
+          <Switch 
+            value={toggleValue} 
+            onValueChange={onToggle}
+            trackColor={{ false: '#d1d5db', true: '#9ca3af' }}
+            thumbColor={toggleValue ? '#4b5563' : '#f3f4f6'}
+          />
+        )}
+        {showChevron && (
+          <ChevronRight size={18} color="#9ca3af" />
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View className="flex-1 bg-gray-50">
-      <View className="mt-8 mx-6">
-        <TouchableOpacity 
-          onPress={signOut}
-          className="flex-row items-center justify-center bg-red-500 py-5 rounded-xl mb-6"
-        >
-          <LogOut size={24} color="#fff" className="mr-2" />
-          <Text className="text-white font-semibold text-lg">Log Out</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          onPress={confirmDelete}
-          className="flex-row items-center justify-center bg-red-800 py-5 rounded-xl"
-        >
-          <Trash2 size={24} color="#fff" className="mr-2" />
-          <Text className="text-white font-semibold text-lg">Delete Account</Text>
-        </TouchableOpacity>
-      </View>
+      <Header title="Settings" />
+      
+      <ScrollView className="flex-1">
+        {/* Profile section */}
+        <View className="bg-white rounded-xl shadow-sm mx-4 mt-6 mb-4 overflow-hidden">
+          <View className="bg-gray-800 px-5 py-4">
+            <Text className="text-white font-semibold text-base">Profile</Text>
+          </View>
+          
+          <View className="px-5 py-5 flex-row items-center">
+            <View className="bg-gray-200 w-16 h-16 rounded-full items-center justify-center mr-4">
+              <User size={32} color="#374151" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-lg font-bold text-gray-800">{userName}</Text>
+              <Text className="text-sm text-gray-500">{userEmail}</Text>
+            </View>
+          </View>
+        </View>
+        
+        {/* App Settings section */}
+        <View className="bg-white rounded-xl shadow-sm mx-4 mb-4 overflow-hidden">
+          <View className="bg-gray-800 px-5 py-4">
+            <Text className="text-white font-semibold text-base">App Settings</Text>
+          </View>
+          
+          {renderSettingItem({
+            icon: <Bell size={20} color="#374151" />,
+            title: "Notifications",
+            subtitle: "Receive alerts about upcoming payments",
+            showToggle: true,
+            toggleValue: notificationsEnabled,
+            onToggle: toggleNotifications
+          })}
+          
+          {renderSettingItem({
+            icon: <Moon size={20} color="#374151" />,
+            title: "Dark Mode",
+            subtitle: "Change app appearance",
+            showToggle: true,
+            toggleValue: darkModeEnabled,
+            onToggle: toggleDarkMode
+          })}
+        </View>
+        
+        {/* Help & Support */}
+        <View className="bg-white rounded-xl shadow-sm mx-4 mb-4 overflow-hidden">
+          <View className="bg-gray-800 px-5 py-4">
+            <Text className="text-white font-semibold text-base">Help & Support</Text>
+          </View>
+          
+          {renderSettingItem({
+            icon: <HelpCircle size={20} color="#374151" />,
+            title: "FAQ",
+            showChevron: true,
+            onPress: () => console.log("FAQ pressed")
+          })}
+          
+          {renderSettingItem({
+            icon: <Mail size={20} color="#374151" />,
+            title: "Contact Support",
+            showChevron: true,
+            onPress: () => console.log("Contact Support pressed")
+          })}
+          
+          {renderSettingItem({
+            icon: <FileText size={20} color="#374151" />,
+            title: "Privacy Policy",
+            showChevron: true,
+            onPress: () => console.log("Privacy Policy pressed")
+          })}
+          
+          {renderSettingItem({
+            icon: <Shield size={20} color="#374151" />,
+            title: "Terms of Service",
+            showChevron: true,
+            onPress: () => console.log("Terms of Service pressed"),
+            subtitle: "Last updated: June 2023"
+          })}
+        </View>
+        
+        {/* Account Actions */}
+        <View className="bg-white rounded-xl shadow-sm mx-4 mb-6 overflow-hidden">
+          <View className="bg-gray-800 px-5 py-4">
+            <Text className="text-white font-semibold text-base">Account</Text>
+          </View>
+          
+          {renderSettingItem({
+            icon: <LogOut size={20} color="#EF4444" />,
+            title: "Log Out",
+            textColor: "text-red-500",
+            onPress: signOut
+          })}
+          
+          {renderSettingItem({
+            icon: <Trash2 size={20} color="#991B1B" />,
+            title: "Delete Account",
+            subtitle: "All your data will be permanently removed",
+            textColor: "text-red-700",
+            onPress: confirmDelete
+          })}
+        </View>
+        
+        <View className="pb-8 px-4">
+          <Text className="text-center text-gray-400 text-xs">
+            Due App v1.0.1
+          </Text>
+        </View>
+      </ScrollView>
     </View>
   );
 };

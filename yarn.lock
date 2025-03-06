@@ -2473,6 +2473,13 @@
     prompts "^2.4.2"
     semver "^7.5.2"
 
+"@react-native-community/datetimepicker@^8.3.0":
+  version "8.3.0"
+  resolved "https://registry.yarnpkg.com/@react-native-community/datetimepicker/-/datetimepicker-8.3.0.tgz#d734a77ae5fdf9585ea2eba0d2b5cf47404c0a09"
+  integrity sha512-K/KgaJbLtjMpx4PaG4efrVIcSe6+DbLufeX1lwPB5YY8i3sq9dOh6WcAcMTLbaRTUpurebQTkl7puHPFm9GalA==
+  dependencies:
+    invariant "^2.2.4"
+
 "@react-native/assets-registry@0.74.88":
   version "0.74.88"
   resolved "https://registry.npmjs.org/@react-native/assets-registry/-/assets-registry-0.74.88.tgz#fb812d88b173c01ae885c7795f2e11cceada4f3b"
@@ -11270,6 +11277,13 @@ react-native-keychain@^9.2.3:
   version "9.2.3"
   resolved "https://registry.npmjs.org/react-native-keychain/-/react-native-keychain-9.2.3.tgz#d21d88a39847c8910fe1e18f8280a4a32a24a6bc"
   integrity sha512-dbn50fk4HLr4JQ71X3j6ZSTbKv+G9s85Zv9cE2na7k7KGn1j+wxjqGTE3wG+WKB3nNEylgu/KXR99mtsC/hpRQ==
+
+react-native-modal-datetime-picker@^18.0.0:
+  version "18.0.0"
+  resolved "https://registry.yarnpkg.com/react-native-modal-datetime-picker/-/react-native-modal-datetime-picker-18.0.0.tgz#0555b2c9ab34318629a251f250de68a0e3b3980d"
+  integrity sha512-0jdvhhraZQlRACwr7pM6vmZ2kxgzJ4CpnmV6J3TVA6MrXMXK6Zo/upRBKkRp0+fTOiKuNblzesA2U59rYo6SGA==
+  dependencies:
+    prop-types "^15.7.2"
 
 react-native-plaid-link-sdk@11.13.3:
   version "11.13.3"
